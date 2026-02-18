@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Base de datos (archivo local, no se versiona)
+*.db
+*.sqlite
+*.sqlite3
+
+# Variables de entorno (contienen secretos)
+.env
+.env.local
+.env.*.local
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Node raíz
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Archivos generados del proyecto original
+nul
+__pycache__/
+SIA CONTRALORIA/
+*.vbs
+*.docx
+Screenshot_*.png
