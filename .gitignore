@@ -1,24 +1,16 @@
 # Python
 __pycache__/
 *.py[cod]
-<<<<<<< HEAD
 *.pyo
 *.pyd
-.Python
-*.egg-info/
-dist/
-build/
-=======
-*.egg-info/
-dist/
-build/
 *.egg
->>>>>>> 64ed626b65d06193df5d2134adb716ddea7adf7e
+*.egg-info/
+dist/
+build/
 .venv/
 venv/
 env/
 
-<<<<<<< HEAD
 # Base de datos (archivo local, no se versiona)
 *.db
 *.sqlite
@@ -44,36 +36,17 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
-=======
-# Environment
-.env
-
-# Database
-*.db
-*.sqlite3
->>>>>>> 64ed626b65d06193df5d2134adb716ddea7adf7e
+desktop.ini
 
 # IDE
 .vscode/
 .idea/
-<<<<<<< HEAD
+*.swp
+*.swo
 
 # Archivos generados del proyecto original
 nul
-__pycache__/
 SIA CONTRALORIA/
 *.vbs
 *.docx
 Screenshot_*.png
-=======
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Logs
-*.log
->>>>>>> 64ed626b65d06193df5d2134adb716ddea7adf7e
