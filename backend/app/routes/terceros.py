@@ -32,3 +32,17 @@ async def crear(data: TerceroCreate, db: AsyncSession = Depends(get_db)):
         data.telefono, data.email, data.tipo, data.banco,
         data.tipo_cuenta, data.no_cuenta
     )
+
+
+@router.put("/{nit}", response_model=TerceroResponse)
+async def actualizar(nit: str, data: TerceroCreate, db: AsyncSession = Depends(get_db)):
+    tercero = await svc.actualizar(db, nit, data.model_dump(exclude_unset=True))
+    if not tercero:
+        raise HTTPException(404, "Tercero no encontrado")
+    return tercero
+
+
+@router.delete("/{nit}", status_code=204)
+async def eliminar(nit: str, db: AsyncSession = Depends(get_db)):
+    if not await svc.eliminar(db, nit):
+        raise HTTPException(404, "Tercero no encontrado")
