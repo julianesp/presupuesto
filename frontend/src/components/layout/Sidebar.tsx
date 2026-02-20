@@ -10,6 +10,7 @@ import {
   CheckSquare,
   CreditCard,
   ArrowDownCircle,
+  ClipboardList,
   SlidersHorizontal,
   Calendar,
   BarChart2,
@@ -40,6 +41,7 @@ const navGroups = [
   {
     label: "EJECUCIÓN INGRESOS",
     items: [
+      { href: "/reconocimientos", label: "Reconocimientos", icon: ClipboardList },
       { href: "/recaudos", label: "Recaudos", icon: ArrowDownCircle },
     ],
   },

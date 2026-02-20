@@ -20,6 +20,7 @@ from app.routes import (
     obligaciones,
     pagos,
     recaudos,
+    reconocimiento,
     modificaciones,
     pac,
     informes,
@@ -76,6 +77,7 @@ app.include_router(rp.router)
 app.include_router(obligaciones.router)
 app.include_router(pagos.router)
 app.include_router(recaudos.router)
+app.include_router(reconocimiento.router)
 app.include_router(modificaciones.router)
 app.include_router(pac.router)
 app.include_router(informes.router)

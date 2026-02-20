@@ -21,6 +21,26 @@ async def buscar(db: AsyncSession, filtro: str) -> list[Tercero]:
     return list(result.scalars().all())
 
 
+async def actualizar(db: AsyncSession, nit: str, data: dict) -> Tercero | None:
+    tercero = await get_tercero(db, nit)
+    if not tercero:
+        return None
+    for k, v in data.items():
+        if v is not None:
+            setattr(tercero, k, v.upper() if k == "nombre" else v)
+    await db.commit()
+    return tercero
+
+
+async def eliminar(db: AsyncSession, nit: str) -> bool:
+    tercero = await get_tercero(db, nit)
+    if not tercero:
+        return False
+    await db.delete(tercero)
+    await db.commit()
+    return True
+
+
 async def guardar(db: AsyncSession, nit: str, dv: str, nombre: str,
                   direccion: str = "", telefono: str = "", email: str = "",
                   tipo: str = "Natural", banco: str = "", tipo_cuenta: str = "",
