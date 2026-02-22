@@ -7,7 +7,7 @@ from app.models.conceptos import Concepto
 from app.services import rubros_gastos, rubros_ingresos
 
 
-async def importar_catalogo_excel(db: AsyncSession, file_content: bytes) -> dict:
+async def importar_catalogo_excel(db: AsyncSession, tenant_id: str, file_content: bytes) -> dict:
     """Import budget catalog from Excel file."""
     import openpyxl
 
@@ -35,12 +35,12 @@ async def importar_catalogo_excel(db: AsyncSession, file_content: bytes) -> dict
                 continue
             aprop_def = float(row[8].value or 0) if len(row) > 8 and row[8].value else 0
 
-            all_rubros = await rubros_gastos.get_rubros(db)
+            all_rubros = await rubros_gastos.get_rubros(db, tenant_id)
             codigos = {r.codigo for r in all_rubros}
             has_children = any(c.startswith(codigo + ".") for c in codigos)
 
             rubro = RubroGasto(
-                codigo=codigo, cuenta=cuenta, es_hoja=0 if has_children else 1,
+                tenant_id=tenant_id, codigo=codigo, cuenta=cuenta, es_hoja=0 if has_children else 1,
                 apropiacion_inicial=aprop_def, apropiacion_definitiva=aprop_def,
             )
             await db.merge(rubro)
@@ -60,12 +60,12 @@ async def importar_catalogo_excel(db: AsyncSession, file_content: bytes) -> dict
                 continue
             ppto_def = float(row[6].value or 0) if len(row) > 6 and row[6].value else 0
 
-            all_rubros = await rubros_ingresos.get_rubros(db)
+            all_rubros = await rubros_ingresos.get_rubros(db, tenant_id)
             codigos = {r.codigo for r in all_rubros}
             has_children = any(c.startswith(codigo + ".") for c in codigos)
 
             rubro = RubroIngreso(
-                codigo=codigo, cuenta=cuenta, es_hoja=0 if has_children else 1,
+                tenant_id=tenant_id, codigo=codigo, cuenta=cuenta, es_hoja=0 if has_children else 1,
                 presupuesto_inicial=ppto_def, presupuesto_definitivo=ppto_def,
             )
             await db.merge(rubro)
@@ -75,9 +75,11 @@ async def importar_catalogo_excel(db: AsyncSession, file_content: bytes) -> dict
 
     await db.commit()
 
-    # Recalculate leaf flags
-    await rubros_gastos._recalcular_hojas(db)
-    await rubros_ingresos._recalcular_hojas(db)
+    # Recalculate leaf flags and propagate values to parent rubros
+    await rubros_gastos._recalcular_hojas(db, tenant_id)
+    await rubros_ingresos._recalcular_hojas(db, tenant_id)
+    await rubros_gastos.sincronizar_padres(db, tenant_id)
+    await rubros_ingresos.sincronizar_padres(db, tenant_id)
 
     return {
         "rubros_gastos": count_gastos,
@@ -88,7 +90,7 @@ async def importar_catalogo_excel(db: AsyncSession, file_content: bytes) -> dict
     }
 
 
-async def importar_rubros_gastos_csv(db: AsyncSession, content: str, separador: str = ";") -> dict:
+async def importar_rubros_gastos_csv(db: AsyncSession, tenant_id: str, content: str, separador: str = ";") -> dict:
     reader = csv.reader(io.StringIO(content), delimiter=separador)
     cantidad = 0
     errores = []
@@ -100,7 +102,7 @@ async def importar_rubros_gastos_csv(db: AsyncSession, content: str, separador: 
             if not codigo or not cuenta:
                 continue
             rubro = RubroGasto(
-                codigo=codigo, cuenta=cuenta, es_hoja=1,
+                tenant_id=tenant_id, codigo=codigo, cuenta=cuenta, es_hoja=1,
                 apropiacion_inicial=aprop_ini, apropiacion_definitiva=aprop_ini,
             )
             await db.merge(rubro)
@@ -108,11 +110,12 @@ async def importar_rubros_gastos_csv(db: AsyncSession, content: str, separador: 
         except Exception as e:
             errores.append(f"Fila {i}: {e}")
     await db.commit()
-    await rubros_gastos._recalcular_hojas(db)
+    await rubros_gastos._recalcular_hojas(db, tenant_id)
+    await rubros_gastos.sincronizar_padres(db, tenant_id)
     return {"cantidad": cantidad, "errores": errores}
 
 
-async def importar_rubros_ingresos_csv(db: AsyncSession, content: str, separador: str = ";") -> dict:
+async def importar_rubros_ingresos_csv(db: AsyncSession, tenant_id: str, content: str, separador: str = ";") -> dict:
     reader = csv.reader(io.StringIO(content), delimiter=separador)
     cantidad = 0
     errores = []
@@ -124,7 +127,7 @@ async def importar_rubros_ingresos_csv(db: AsyncSession, content: str, separador
             if not codigo or not cuenta:
                 continue
             rubro = RubroIngreso(
-                codigo=codigo, cuenta=cuenta, es_hoja=1,
+                tenant_id=tenant_id, codigo=codigo, cuenta=cuenta, es_hoja=1,
                 presupuesto_inicial=ppto_ini, presupuesto_definitivo=ppto_ini,
             )
             await db.merge(rubro)
@@ -132,11 +135,12 @@ async def importar_rubros_ingresos_csv(db: AsyncSession, content: str, separador
         except Exception as e:
             errores.append(f"Fila {i}: {e}")
     await db.commit()
-    await rubros_ingresos._recalcular_hojas(db)
+    await rubros_ingresos._recalcular_hojas(db, tenant_id)
+    await rubros_ingresos.sincronizar_padres(db, tenant_id)
     return {"cantidad": cantidad, "errores": errores}
 
 
-async def importar_terceros_csv(db: AsyncSession, content: str, separador: str = ";") -> dict:
+async def importar_terceros_csv(db: AsyncSession, tenant_id: str, content: str, separador: str = ";") -> dict:
     reader = csv.reader(io.StringIO(content), delimiter=separador)
     cantidad = 0
     errores = []
@@ -150,7 +154,7 @@ async def importar_terceros_csv(db: AsyncSession, content: str, separador: str =
             if not nit or not nombre:
                 continue
             tercero = Tercero(
-                nit=nit, dv=dv, nombre=nombre.upper(),
+                tenant_id=tenant_id, nit=nit, dv=dv, nombre=nombre.upper(),
                 direccion=row[3].strip() if len(row) > 3 else "",
                 telefono=row[4].strip() if len(row) > 4 else "",
                 email=row[5].strip() if len(row) > 5 else "",

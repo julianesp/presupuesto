@@ -16,4 +16,9 @@ export const configApi = {
     ),
   cierreMes: () =>
     api.post<{ mes_cerrado: number }>("/api/consolidacion/cierre-mes", {}),
+  aperturaVigencia: (anio: number) =>
+    api.post<{ anio: number; consecutivos_reseteados: string[] }>(
+      `/api/config/apertura-vigencia?anio=${anio}`,
+      {},
+    ),
 };

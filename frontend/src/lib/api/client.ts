@@ -10,13 +10,32 @@ export class ApiError extends Error {
   }
 }
 
+function getAuthHeaders(): Record<string, string> {
+  const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
+  if (isDev) {
+    return { "X-Dev-Email": "admin@localhost" };
+  }
+  // En producción: leer cookie CF_Authorization (no es HttpOnly)
+  if (typeof document !== "undefined") {
+    const match = document.cookie.match(/CF_Authorization=([^;]+)/);
+    if (match) {
+      return { Authorization: `Bearer ${match[1]}` };
+    }
+  }
+  return {};
+}
+
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${BASE_URL}${path}`;
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+      ...options.headers,
+    },
     ...options,
   });
   if (!res.ok) {

@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { pagosApi } from "@/lib/api/pagos";
 import { obligacionesApi } from "@/lib/api/obligaciones";
 import { cuentasBancariasApi } from "@/lib/api/cuentas-bancarias";
-import type { Pago, PagoCreate } from "@/lib/types/pago";
+import type { Pago, PagoCreate, PagoUpdate } from "@/lib/types/pago";
 import type { Obligacion } from "@/lib/types/obligacion";
 import type { CuentaBancaria } from "@/lib/types/cuenta-bancaria";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -30,9 +30,101 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BanIcon } from "lucide-react";
+import { BanIcon, PencilIcon, FileTextIcon } from "lucide-react";
+import Link from "next/link";
 
 const MEDIOS_PAGO = ["Transferencia", "Cheque", "Efectivo", "Otro"];
+
+function EditPagoForm({
+  item, cuentas, onSave, onClose,
+}: {
+  item: Pago | null;
+  cuentas: CuentaBancaria[];
+  onSave: (d: PagoUpdate) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [valor, setValor] = useState(0);
+  const [concepto, setConcepto] = useState("");
+  const [medioPago, setMedioPago] = useState("Transferencia");
+  const [comprobante, setComprobante] = useState("");
+  const [cuentaId, setCuentaId] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      setValor(item.valor);
+      setConcepto(item.concepto ?? "");
+      setMedioPago(item.medio_pago ?? "Transferencia");
+      setComprobante(item.no_comprobante ?? "");
+      setCuentaId(item.cuenta_bancaria_id ? String(item.cuenta_bancaria_id) : "");
+    }
+  }, [item]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onSave({
+        valor,
+        concepto,
+        medio_pago: medioPago,
+        no_comprobante: comprobante,
+        cuenta_bancaria_id: cuentaId ? parseInt(cuentaId) : undefined,
+      });
+      onClose();
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={!!item} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>Editar Pago N° {item?.numero}</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Valor</Label>
+            <CurrencyInput value={valor} onChange={setValor} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Concepto</Label>
+            <Input value={concepto} onChange={(e) => setConcepto(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Medio de Pago</Label>
+              <Select value={medioPago} onValueChange={setMedioPago}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MEDIOS_PAGO.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>N° Comprobante</Label>
+              <Input value={comprobante} onChange={(e) => setComprobante(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Cuenta Bancaria</Label>
+            <Select value={cuentaId} onValueChange={setCuentaId}>
+              <SelectTrigger><SelectValue placeholder="Seleccionar cuenta..." /></SelectTrigger>
+              <SelectContent>
+                {cuentas.map((c) => (
+                  <SelectItem key={c.id} value={String(c.id)}>{c.banco} — {c.numero_cuenta}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || valor <= 0}>
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function PagoForm({
   open, obligaciones, cuentas, onSave, onClose,
@@ -145,6 +237,7 @@ export default function PagosPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [anulando, setAnulando] = useState<Pago | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
+  const [editando, setEditando] = useState<Pago | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -186,11 +279,25 @@ export default function PagosPage() {
     } finally { setAnulLoading(false); }
   }
 
+  async function handleEdit(data: PagoUpdate) {
+    if (!editando) return;
+    try {
+      await pagosApi.update(editando.numero, data);
+      toast({ title: "Pago actualizado" });
+      setEditando(null);
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+      throw e;
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Pagos"
         action={{ label: "Nuevo Pago", onClick: () => setFormOpen(true) }}
+        onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4"><FiltroEstado value={filtro} onChange={setFiltro} /></div>
       {loading && <LoadingTable />}
@@ -219,11 +326,23 @@ export default function PagosPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={p.valor} /></TableCell>
                   <TableCell><EstadoBadge estado={p.estado} /></TableCell>
                   <TableCell>
-                    {p.estado === "Activo" && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(p)}>
-                        <BanIcon className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-0.5">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500" title="Ver Comprobante de Egreso" asChild>
+                        <Link href={`/comprobantes/pago/${p.numero}`} target="_blank">
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                        </Link>
                       </Button>
-                    )}
+                      {p.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(p)} title="Editar">
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {p.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(p)} title="Anular">
+                          <BanIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -232,6 +351,7 @@ export default function PagosPage() {
         </div>
       )}
       <PagoForm open={formOpen} obligaciones={obligaciones} cuentas={cuentas} onSave={handleSave} onClose={() => setFormOpen(false)} />
+      <EditPagoForm item={editando} cuentas={cuentas} onSave={handleEdit} onClose={() => setEditando(null)} />
       <ConfirmDialog
         open={!!anulando}
         title="¿Anular pago?"

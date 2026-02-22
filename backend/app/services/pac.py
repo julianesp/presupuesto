@@ -6,76 +6,63 @@ from app.models.pago import Pago
 from app.models.rubros import RubroGasto
 
 
-# ---------------------------------------------------------------------------
-# Inicializar PAC (12 meses con valor 0)
-# ---------------------------------------------------------------------------
-
-async def inicializar_pac(db: AsyncSession, codigo_rubro: str) -> list[PAC]:
-    existing = await get_pac(db, codigo_rubro)
+async def inicializar_pac(db: AsyncSession, tenant_id: str, codigo_rubro: str) -> list[PAC]:
+    existing = await get_pac(db, tenant_id, codigo_rubro)
     if existing:
         return existing
 
     registros = []
     for mes in range(1, 13):
         pac = PAC(
+            tenant_id=tenant_id,
             codigo_rubro=codigo_rubro,
             mes=mes,
             valor_programado=0,
         )
         db.add(pac)
         registros.append(pac)
-    await db.flush()
+    await db.flush()  # flush dentro de la transacción del llamador
     return registros
 
 
-# ---------------------------------------------------------------------------
-# Obtener los 12 registros PAC de un rubro
-# ---------------------------------------------------------------------------
-
-async def get_pac(db: AsyncSession, codigo_rubro: str) -> list[PAC]:
+async def get_pac(db: AsyncSession, tenant_id: str, codigo_rubro: str) -> list[PAC]:
     stmt = (
         select(PAC)
-        .where(PAC.codigo_rubro == codigo_rubro)
+        .where(PAC.tenant_id == tenant_id, PAC.codigo_rubro == codigo_rubro)
         .order_by(PAC.mes)
     )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
-# ---------------------------------------------------------------------------
-# Establecer PAC completo (12 valores mensuales)
-# ---------------------------------------------------------------------------
-
 async def set_pac_completo(
     db: AsyncSession,
+    tenant_id: str,
     codigo_rubro: str,
     valores_mensuales: list[float],
 ) -> list[PAC]:
     if len(valores_mensuales) != 12:
         raise ValueError("Se requieren exactamente 12 valores mensuales")
 
-    existing = await get_pac(db, codigo_rubro)
+    existing = await get_pac(db, tenant_id, codigo_rubro)
 
     if not existing:
-        existing = await inicializar_pac(db, codigo_rubro)
+        existing = await inicializar_pac(db, tenant_id, codigo_rubro)
 
     for pac_record, valor in zip(existing, valores_mensuales):
         pac_record.valor_programado = valor
 
-    await db.flush()
+    await db.commit()
     return existing
 
 
-# ---------------------------------------------------------------------------
-# PAC disponible para un mes = valor_programado - pagos del mes
-# ---------------------------------------------------------------------------
-
 async def get_pac_disponible(
-    db: AsyncSession, codigo_rubro: str, mes: int
+    db: AsyncSession, tenant_id: str, codigo_rubro: str, mes: int
 ) -> float:
-    # Obtener valor programado para el mes
     stmt = select(PAC).where(
-        and_(PAC.codigo_rubro == codigo_rubro, PAC.mes == mes)
+        PAC.tenant_id == tenant_id,
+        PAC.codigo_rubro == codigo_rubro,
+        PAC.mes == mes,
     )
     result = await db.execute(stmt)
     pac_record = result.scalar_one_or_none()
@@ -83,10 +70,10 @@ async def get_pac_disponible(
     if pac_record is None:
         return 0
 
-    # Sumar pagos del mes para este rubro
     mes_col = func.cast(func.substr(Pago.fecha, 6, 2), Integer)
     stmt_pagos = select(func.coalesce(func.sum(Pago.valor), 0)).where(
         and_(
+            Pago.tenant_id == tenant_id,
             Pago.codigo_rubro == codigo_rubro,
             Pago.estado == "PAGADO",
             mes_col == mes,
@@ -98,14 +85,13 @@ async def get_pac_disponible(
     return pac_record.valor_programado - total_pagos
 
 
-# ---------------------------------------------------------------------------
-# Distribuir uniformemente la apropiacion definitiva en 12 meses
-# ---------------------------------------------------------------------------
-
 async def distribuir_uniforme(
-    db: AsyncSession, codigo_rubro: str
+    db: AsyncSession, tenant_id: str, codigo_rubro: str
 ) -> list[float]:
-    stmt = select(RubroGasto).where(RubroGasto.codigo == codigo_rubro)
+    stmt = select(RubroGasto).where(
+        RubroGasto.tenant_id == tenant_id,
+        RubroGasto.codigo == codigo_rubro,
+    )
     result = await db.execute(stmt)
     rubro = result.scalar_one_or_none()
 
@@ -115,32 +101,37 @@ async def distribuir_uniforme(
     total = rubro.apropiacion_definitiva
     mensual = round(total / 12, 2)
     valores = [mensual] * 12
-    # Ajustar ultimo mes para que la suma cuadre
     valores[11] = round(total - (mensual * 11), 2)
 
-    await set_pac_completo(db, codigo_rubro, valores)
+    await set_pac_completo(db, tenant_id, codigo_rubro, valores)
     return valores
 
 
-# ---------------------------------------------------------------------------
-# Validar si un pago cabe en el PAC del mes
-# ---------------------------------------------------------------------------
+async def distribuir_uniforme_todos(db: AsyncSession, tenant_id: str) -> int:
+    stmt = select(RubroGasto).where(
+        RubroGasto.tenant_id == tenant_id,
+        RubroGasto.es_hoja == 1,
+    )
+    result = await db.execute(stmt)
+    rubros = list(result.scalars().all())
+    for rubro in rubros:
+        await distribuir_uniforme(db, tenant_id, rubro.codigo)
+    return len(rubros)
+
 
 async def validar_pago_pac(
-    db: AsyncSession, codigo_rubro: str, mes: int, valor: float
+    db: AsyncSession, tenant_id: str, codigo_rubro: str, mes: int, valor: float
 ) -> tuple[bool, str]:
-    pac_records = await get_pac(db, codigo_rubro)
+    pac_records = await get_pac(db, tenant_id, codigo_rubro)
 
-    # Si no hay PAC configurado, se permite el pago
     if not pac_records:
         return (True, "PAC no configurado")
 
-    # Si todos los meses tienen valor_programado = 0, no hay PAC real
     total_programado = sum(p.valor_programado for p in pac_records)
     if total_programado == 0:
         return (True, "PAC no configurado")
 
-    disponible = await get_pac_disponible(db, codigo_rubro, mes)
+    disponible = await get_pac_disponible(db, tenant_id, codigo_rubro, mes)
 
     if valor <= disponible:
         return (True, "OK")
@@ -148,14 +139,10 @@ async def validar_pago_pac(
     return (False, f"Excede PAC disponible: ${disponible:,.2f}")
 
 
-# ---------------------------------------------------------------------------
-# Resumen PAC de todos los rubros hoja de gastos
-# ---------------------------------------------------------------------------
-
-async def get_resumen_pac(db: AsyncSession) -> list[dict]:
+async def get_resumen_pac(db: AsyncSession, tenant_id: str) -> list[dict]:
     stmt = (
         select(RubroGasto)
-        .where(RubroGasto.es_hoja == 1)
+        .where(RubroGasto.tenant_id == tenant_id, RubroGasto.es_hoja == 1)
         .order_by(RubroGasto.codigo)
     )
     result = await db.execute(stmt)
@@ -163,7 +150,7 @@ async def get_resumen_pac(db: AsyncSession) -> list[dict]:
 
     resumen = []
     for rubro in rubros:
-        pac_records = await get_pac(db, rubro.codigo)
+        pac_records = await get_pac(db, tenant_id, rubro.codigo)
 
         meses = {}
         total_programado = 0
@@ -171,12 +158,14 @@ async def get_resumen_pac(db: AsyncSession) -> list[dict]:
             meses[p.mes] = p.valor_programado
             total_programado += p.valor_programado
 
+        pac_list = [{"mes": m, "valor_programado": v} for m, v in sorted(meses.items())]
         resumen.append({
-            "codigo_rubro": rubro.codigo,
+            "codigo": rubro.codigo,
             "cuenta": rubro.cuenta,
             "apropiacion_definitiva": rubro.apropiacion_definitiva,
-            "total_programado": total_programado,
-            "meses": meses,
+            "total_pac": total_programado,
+            "pac_configurado": total_programado > 0,
+            "pac": pac_list,
         })
 
     return resumen

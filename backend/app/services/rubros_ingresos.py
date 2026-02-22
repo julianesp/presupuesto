@@ -4,8 +4,8 @@ from app.models.rubros import RubroIngreso
 from app.models.recaudo import Recaudo
 
 
-async def get_rubros(db: AsyncSession, solo_hojas: bool = False) -> list[RubroIngreso]:
-    stmt = select(RubroIngreso)
+async def get_rubros(db: AsyncSession, tenant_id: str, solo_hojas: bool = False) -> list[RubroIngreso]:
+    stmt = select(RubroIngreso).where(RubroIngreso.tenant_id == tenant_id)
     if solo_hojas:
         stmt = stmt.where(RubroIngreso.es_hoja == 1)
     stmt = stmt.order_by(RubroIngreso.codigo)
@@ -13,14 +13,20 @@ async def get_rubros(db: AsyncSession, solo_hojas: bool = False) -> list[RubroIn
     return list(result.scalars().all())
 
 
-async def get_rubro(db: AsyncSession, codigo: str) -> RubroIngreso | None:
-    result = await db.execute(select(RubroIngreso).where(RubroIngreso.codigo == codigo))
+async def get_rubro(db: AsyncSession, tenant_id: str, codigo: str) -> RubroIngreso | None:
+    result = await db.execute(
+        select(RubroIngreso).where(
+            RubroIngreso.tenant_id == tenant_id,
+            RubroIngreso.codigo == codigo,
+        )
+    )
     return result.scalar_one_or_none()
 
 
-async def buscar(db: AsyncSession, filtro: str) -> list[RubroIngreso]:
+async def buscar(db: AsyncSession, tenant_id: str, filtro: str) -> list[RubroIngreso]:
     stmt = select(RubroIngreso).where(
         and_(
+            RubroIngreso.tenant_id == tenant_id,
             RubroIngreso.es_hoja == 1,
             (RubroIngreso.codigo.ilike(f"%{filtro}%") | RubroIngreso.cuenta.ilike(f"%{filtro}%")),
         )
@@ -29,25 +35,30 @@ async def buscar(db: AsyncSession, filtro: str) -> list[RubroIngreso]:
     return list(result.scalars().all())
 
 
-async def saldo_por_recaudar(db: AsyncSession, codigo_rubro: str) -> float:
-    rubro = await get_rubro(db, codigo_rubro)
+async def saldo_por_recaudar(db: AsyncSession, tenant_id: str, codigo_rubro: str) -> float:
+    rubro = await get_rubro(db, tenant_id, codigo_rubro)
     if not rubro:
         return 0
     stmt = select(func.coalesce(func.sum(Recaudo.valor), 0)).where(
-        and_(Recaudo.codigo_rubro == codigo_rubro, Recaudo.estado != "ANULADO")
+        and_(
+            Recaudo.tenant_id == tenant_id,
+            Recaudo.codigo_rubro == codigo_rubro,
+            Recaudo.estado != "ANULADO",
+        )
     )
     result = await db.execute(stmt)
     total_recaudos = result.scalar()
     return rubro.presupuesto_definitivo - total_recaudos
 
 
-async def crear(db: AsyncSession, codigo: str, cuenta: str,
+async def crear(db: AsyncSession, tenant_id: str, codigo: str, cuenta: str,
                 presupuesto_definitivo: float = 0, presupuesto_inicial: float = 0) -> RubroIngreso:
-    existing = await get_rubro(db, codigo)
+    existing = await get_rubro(db, tenant_id, codigo)
     if existing:
         raise ValueError(f"El rubro {codigo} ya existe")
 
     rubro = RubroIngreso(
+        tenant_id=tenant_id,
         codigo=codigo,
         cuenta=cuenta,
         es_hoja=1,
@@ -59,19 +70,19 @@ async def crear(db: AsyncSession, codigo: str, cuenta: str,
     parts = codigo.rsplit(".", 1)
     if len(parts) > 1:
         parent_code = parts[0]
-        parent = await get_rubro(db, parent_code)
+        parent = await get_rubro(db, tenant_id, parent_code)
         if parent:
             parent.es_hoja = 0
 
     await db.commit()
-    await _recalcular_hojas(db)
+    await _recalcular_hojas(db, tenant_id)
     return rubro
 
 
-async def editar(db: AsyncSession, codigo: str, cuenta: str | None = None,
+async def editar(db: AsyncSession, tenant_id: str, codigo: str, cuenta: str | None = None,
                  presupuesto_definitivo: float | None = None,
                  presupuesto_inicial: float | None = None) -> RubroIngreso:
-    rubro = await get_rubro(db, codigo)
+    rubro = await get_rubro(db, tenant_id, codigo)
     if not rubro:
         raise ValueError(f"Rubro {codigo} no encontrado")
 
@@ -92,18 +103,22 @@ async def editar(db: AsyncSession, codigo: str, cuenta: str | None = None,
     return rubro
 
 
-async def eliminar(db: AsyncSession, codigo: str):
-    rubro = await get_rubro(db, codigo)
+async def eliminar(db: AsyncSession, tenant_id: str, codigo: str):
+    rubro = await get_rubro(db, tenant_id, codigo)
     if not rubro:
         raise ValueError(f"Rubro {codigo} no encontrado")
 
-    stmt = select(func.count()).select_from(Recaudo).where(Recaudo.codigo_rubro == codigo)
+    stmt = select(func.count()).select_from(Recaudo).where(
+        Recaudo.tenant_id == tenant_id,
+        Recaudo.codigo_rubro == codigo,
+    )
     result = await db.execute(stmt)
     if result.scalar() > 0:
         raise ValueError("No se puede eliminar: tiene recaudos registrados")
 
     stmt = select(func.count()).select_from(RubroIngreso).where(
-        RubroIngreso.codigo.like(f"{codigo}.%")
+        RubroIngreso.tenant_id == tenant_id,
+        RubroIngreso.codigo.like(f"{codigo}.%"),
     )
     result = await db.execute(stmt)
     if result.scalar() > 0:
@@ -111,11 +126,11 @@ async def eliminar(db: AsyncSession, codigo: str):
 
     await db.delete(rubro)
     await db.commit()
-    await _recalcular_hojas(db)
+    await _recalcular_hojas(db, tenant_id)
 
 
-async def _recalcular_hojas(db: AsyncSession):
-    all_rubros = await get_rubros(db)
+async def _recalcular_hojas(db: AsyncSession, tenant_id: str):
+    all_rubros = await get_rubros(db, tenant_id)
     codigos = {r.codigo for r in all_rubros}
     for rubro in all_rubros:
         has_children = any(c.startswith(rubro.codigo + ".") for c in codigos if c != rubro.codigo)
@@ -125,8 +140,8 @@ async def _recalcular_hojas(db: AsyncSession):
     await db.commit()
 
 
-async def sincronizar_padres(db: AsyncSession):
-    all_rubros = await get_rubros(db)
+async def sincronizar_padres(db: AsyncSession, tenant_id: str):
+    all_rubros = await get_rubros(db, tenant_id)
     hojas = [r for r in all_rubros if r.es_hoja == 1]
     padres = [r for r in all_rubros if r.es_hoja == 0]
 

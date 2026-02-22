@@ -16,6 +16,7 @@ export interface CDPCreate {
   objeto: string;
   valor: number;
   fuente_sifse?: number;
+  item_sifse?: number;
 }
 
 export interface CDPUpdate {

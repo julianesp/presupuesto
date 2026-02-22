@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { AlertTriangleIcon } from "lucide-react";
 
 export default function ConfiguracionPage() {
   const [config, setConfig] = useState<Config | null>(null);
@@ -16,6 +18,9 @@ export default function ConfiguracionPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [consolidando, setConsolidando] = useState(false);
+  const [nuevoAnio, setNuevoAnio] = useState("");
+  const [confirmApertura, setConfirmApertura] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
   const { toast } = useToast();
 
   const [form, setForm] = useState<ConfigUpdate>({});
@@ -76,6 +81,24 @@ export default function ConfiguracionPage() {
     } catch (e: unknown) {
       toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
     } finally { setConsolidando(false); }
+  }
+
+  async function handleAperturaVigencia() {
+    const anio = parseInt(nuevoAnio);
+    if (isNaN(anio) || anio < 2000 || anio > 2100) {
+      toast({ variant: "destructive", title: "Ingrese un año válido (ej: 2027)" });
+      return;
+    }
+    setAbriendo(true);
+    setConfirmApertura(false);
+    try {
+      const res = await configApi.aperturaVigencia(anio);
+      toast({ title: `Vigencia ${res.anio} abierta. Consecutivos reseteados.` });
+      setNuevoAnio("");
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+    } finally { setAbriendo(false); }
   }
 
   if (loading) return <LoadingTable rows={6} cols={2} />;
@@ -165,6 +188,55 @@ export default function ConfiguracionPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card className="border-orange-200">
+        <CardHeader>
+          <CardTitle className="text-base text-orange-800">Apertura de Nueva Vigencia</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-2 rounded-lg bg-orange-50 border border-orange-200 p-3">
+            <AlertTriangleIcon className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
+            <p className="text-xs text-orange-800">
+              <strong>Importante:</strong> Esta operación cambia el año de vigencia y resetea todos los
+              consecutivos (CDP, RP, Obligaciones, Pagos, etc.) a cero. Los datos existentes se conservan.
+              Se recomienda hacer una copia de seguridad antes de continuar.
+            </p>
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="space-y-1.5">
+              <Label>Año de la nueva vigencia</Label>
+              <Input
+                type="number"
+                placeholder="ej: 2027"
+                value={nuevoAnio}
+                onChange={(e) => setNuevoAnio(e.target.value)}
+                className="w-32"
+                min={2020}
+                max={2100}
+              />
+            </div>
+            <Button
+              variant="outline"
+              className="border-orange-300 text-orange-700 hover:bg-orange-50"
+              disabled={!nuevoAnio || abriendo}
+              onClick={() => setConfirmApertura(true)}
+            >
+              {abriendo ? "Abriendo vigencia..." : "Abrir vigencia"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={confirmApertura}
+        title={`¿Abrir vigencia ${nuevoAnio}?`}
+        description={`Se cambiará la vigencia del sistema a ${nuevoAnio} y se resetearán todos los consecutivos a cero. Los datos actuales se conservarán.`}
+        confirmLabel="Sí, abrir vigencia"
+        cancelLabel="Cancelar"
+        onConfirm={handleAperturaVigencia}
+        onCancel={() => setConfirmApertura(false)}
+        loading={abriendo}
+      />
     </div>
   );
 }

@@ -13,3 +13,8 @@ class DashboardResumen(BaseModel):
     recaudado: float
     saldo_por_recaudar: float
     equilibrio: float
+    pct_cdp: float = 0.0
+    pct_comprometido: float = 0.0
+    pct_obligado: float = 0.0
+    pct_pagado: float = 0.0
+    pct_recaudado: float = 0.0

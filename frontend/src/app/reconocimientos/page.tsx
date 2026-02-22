@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { reconocimientosApi } from "@/lib/api/reconocimientos";
 import { rubrosIngresosApi } from "@/lib/api/rubros";
 import { tercerosApi } from "@/lib/api/terceros";
-import type { Reconocimiento, ReconocimientoCreate } from "@/lib/types/reconocimiento";
+import type { Reconocimiento, ReconocimientoCreate, ReconocimientoUpdate } from "@/lib/types/reconocimiento";
 import type { RubroIngreso } from "@/lib/types/rubros";
 import type { Tercero } from "@/lib/types/tercero";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -29,7 +29,86 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BanIcon } from "lucide-react";
+import { BanIcon, PencilIcon } from "lucide-react";
+
+function EditReconocimientoForm({
+  item, terceros, onSave, onClose,
+}: {
+  item: Reconocimiento | null;
+  terceros: Tercero[];
+  onSave: (d: ReconocimientoUpdate) => Promise<void>;
+  onClose: () => void;
+}) {
+  const NONE = "__none__";
+  const [valor, setValor] = useState(0);
+  const [terceroNit, setTerceroNit] = useState(NONE);
+  const [concepto, setConcepto] = useState("");
+  const [noDocumento, setNoDocumento] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      setValor(item.valor);
+      setTerceroNit(item.tercero_nit || NONE);
+      setConcepto(item.concepto ?? "");
+      setNoDocumento(item.no_documento ?? "");
+    }
+  }, [item]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onSave({
+        valor,
+        tercero_nit: terceroNit === NONE ? "" : terceroNit,
+        concepto,
+        no_documento: noDocumento,
+      });
+      onClose();
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={!!item} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Editar Reconocimiento N° {item?.numero}</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Tercero (Deudor / Fuente)</Label>
+            <Select value={terceroNit} onValueChange={setTerceroNit}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">— Sin tercero —</SelectItem>
+                {terceros.map((t) => (
+                  <SelectItem key={t.nit} value={t.nit}>{t.nit} — {t.nombre}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Valor</Label>
+            <CurrencyInput value={valor} onChange={setValor} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Concepto</Label>
+            <Input value={concepto} onChange={(e) => setConcepto(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>N° Documento / Factura</Label>
+            <Input value={noDocumento} onChange={(e) => setNoDocumento(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || valor <= 0}>
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function ReconocimientoForm({
   open,
@@ -161,6 +240,7 @@ export default function ReconocimientosPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [anulando, setAnulando] = useState<Reconocimiento | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
+  const [editando, setEditando] = useState<Reconocimiento | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -210,11 +290,25 @@ export default function ReconocimientosPage() {
     }
   }
 
+  async function handleEdit(data: ReconocimientoUpdate) {
+    if (!editando) return;
+    try {
+      await reconocimientosApi.update(editando.numero, data);
+      toast({ title: "Reconocimiento actualizado" });
+      setEditando(null);
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+      throw e;
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Reconocimientos"
         action={{ label: "Nuevo Reconocimiento", onClick: () => setFormOpen(true) }}
+        onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4">
         <FiltroEstado value={filtro} onChange={setFiltro} />
@@ -252,17 +346,18 @@ export default function ReconocimientosPage() {
                     <EstadoBadge estado={r.estado} />
                   </TableCell>
                   <TableCell>
-                    {r.estado === "ACTIVO" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500"
-                        onClick={() => setAnulando(r)}
-                        title="Anular"
-                      >
-                        <BanIcon className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-0.5">
+                      {r.estado === "ACTIVO" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(r)} title="Editar">
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {r.estado === "ACTIVO" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)} title="Anular">
+                          <BanIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -277,6 +372,12 @@ export default function ReconocimientosPage() {
         terceros={terceros}
         onSave={handleSave}
         onClose={() => setFormOpen(false)}
+      />
+      <EditReconocimientoForm
+        item={editando}
+        terceros={terceros}
+        onSave={handleEdit}
+        onClose={() => setEditando(null)}
       />
 
       <ConfirmDialog

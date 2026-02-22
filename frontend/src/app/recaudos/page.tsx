@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { recaudosApi } from "@/lib/api/recaudos";
 import { rubrosIngresosApi } from "@/lib/api/rubros";
 import { cuentasBancariasApi } from "@/lib/api/cuentas-bancarias";
-import type { Recaudo, RecaudoCreate } from "@/lib/types/recaudo";
+import type { Recaudo, RecaudoCreate, RecaudoUpdate } from "@/lib/types/recaudo";
 import type { RubroIngreso } from "@/lib/types/rubros";
 import type { CuentaBancaria } from "@/lib/types/cuenta-bancaria";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -29,7 +29,85 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BanIcon } from "lucide-react";
+import { BanIcon, PencilIcon, FileTextIcon } from "lucide-react";
+import Link from "next/link";
+
+function EditRecaudoForm({
+  item, cuentas, onSave, onClose,
+}: {
+  item: Recaudo | null;
+  cuentas: CuentaBancaria[];
+  onSave: (d: RecaudoUpdate) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [valor, setValor] = useState(0);
+  const [concepto, setConcepto] = useState("");
+  const [comprobante, setComprobante] = useState("");
+  const [cuentaId, setCuentaId] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      setValor(item.valor);
+      setConcepto(item.concepto ?? "");
+      setComprobante(item.no_comprobante ?? "");
+      setCuentaId(item.cuenta_bancaria_id ? String(item.cuenta_bancaria_id) : "");
+    }
+  }, [item]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onSave({
+        valor,
+        concepto,
+        no_comprobante: comprobante,
+        cuenta_bancaria_id: cuentaId ? parseInt(cuentaId) : undefined,
+      });
+      onClose();
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={!!item} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Editar Recaudo N° {item?.numero}</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Valor</Label>
+            <CurrencyInput value={valor} onChange={setValor} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Concepto</Label>
+            <Input value={concepto} onChange={(e) => setConcepto(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>N° Comprobante</Label>
+            <Input value={comprobante} onChange={(e) => setComprobante(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Cuenta Bancaria</Label>
+            <Select value={cuentaId} onValueChange={setCuentaId}>
+              <SelectTrigger><SelectValue placeholder="Seleccionar cuenta..." /></SelectTrigger>
+              <SelectContent>
+                {cuentas.map((c) => (
+                  <SelectItem key={c.id} value={String(c.id)}>{c.banco} — {c.numero_cuenta}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || valor <= 0}>
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function RecaudoForm({
   open, rubros, cuentas, onSave, onClose,
@@ -129,6 +207,7 @@ export default function RecaudosPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [anulando, setAnulando] = useState<Recaudo | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
+  const [editando, setEditando] = useState<Recaudo | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -170,11 +249,25 @@ export default function RecaudosPage() {
     } finally { setAnulLoading(false); }
   }
 
+  async function handleEdit(data: RecaudoUpdate) {
+    if (!editando) return;
+    try {
+      await recaudosApi.update(editando.numero, data);
+      toast({ title: "Recaudo actualizado" });
+      setEditando(null);
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+      throw e;
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Recaudos"
         action={{ label: "Nuevo Recaudo", onClick: () => setFormOpen(true) }}
+        onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4"><FiltroEstado value={filtro} onChange={setFiltro} /></div>
       {loading && <LoadingTable />}
@@ -201,11 +294,23 @@ export default function RecaudosPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={r.valor} /></TableCell>
                   <TableCell><EstadoBadge estado={r.estado} /></TableCell>
                   <TableCell>
-                    {r.estado === "Activo" && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)}>
-                        <BanIcon className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-0.5">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500" title="Ver Recibo de Caja" asChild>
+                        <Link href={`/comprobantes/recaudo/${r.numero}`} target="_blank">
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                        </Link>
                       </Button>
-                    )}
+                      {r.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(r)} title="Editar">
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {r.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)} title="Anular">
+                          <BanIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -214,6 +319,7 @@ export default function RecaudosPage() {
         </div>
       )}
       <RecaudoForm open={formOpen} rubros={rubros} cuentas={cuentas} onSave={handleSave} onClose={() => setFormOpen(false)} />
+      <EditRecaudoForm item={editando} cuentas={cuentas} onSave={handleEdit} onClose={() => setEditando(null)} />
       <ConfirmDialog
         open={!!anulando}
         title="¿Anular recaudo?"
