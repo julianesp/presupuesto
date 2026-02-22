@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { modificacionesApi } from "@/lib/api/modificaciones";
 import { rubrosGastosApi, rubrosIngresosApi } from "@/lib/api/rubros";
-import type { Modificacion, AdicionCreate, ReduccionCreate, CreditoContracreditoCreate } from "@/lib/types/modificacion";
+import type { Modificacion, AdicionCreate, ReduccionCreate, CreditoContracreditoCreate, AplazamientoCreate, DesplazamientoCreate } from "@/lib/types/modificacion";
 import type { RubroGasto, RubroIngreso } from "@/lib/types/rubros";
 import { PageHeader } from "@/components/common/PageHeader";
 import { LoadingTable } from "@/components/common/LoadingTable";
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { BanIcon, PlusIcon } from "lucide-react";
 
-type FormTipo = "adicion" | "reduccion" | "credito";
+type FormTipo = "adicion" | "reduccion" | "credito" | "aplazamiento" | "desplazamiento";
 
 function ModifForm({
   open, tipo, gastosHojas, ingresosHojas, onSave, onClose,
@@ -38,7 +38,7 @@ function ModifForm({
   tipo: FormTipo;
   gastosHojas: RubroGasto[];
   ingresosHojas: RubroIngreso[];
-  onSave: (d: AdicionCreate | ReduccionCreate | CreditoContracreditoCreate) => Promise<void>;
+  onSave: (d: AdicionCreate | ReduccionCreate | CreditoContracreditoCreate | AplazamientoCreate | DesplazamientoCreate) => Promise<void>;
   onClose: () => void;
 }) {
   const [codigoA, setCodigoA] = useState("");
@@ -52,7 +52,12 @@ function ModifForm({
     adicion: "Nueva Adición",
     reduccion: "Nueva Reducción",
     credito: "Nuevo Crédito/Contracrédito",
+    aplazamiento: "Nuevo Aplazamiento",
+    desplazamiento: "Nuevo Desplazamiento",
   };
+
+  const esUnRubro = tipo === "aplazamiento";
+  const necesitaIngreso = tipo === "adicion" || tipo === "reduccion";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,15 +67,19 @@ function ModifForm({
         await onSave({ codigo_gasto: codigoA, codigo_ingreso: codigoB, valor, numero_acto: numeroActo, descripcion });
       } else if (tipo === "reduccion") {
         await onSave({ codigo_gasto: codigoA, codigo_ingreso: codigoB, valor, numero_acto: numeroActo, descripcion });
-      } else {
+      } else if (tipo === "credito") {
         await onSave({ codigo_credito: codigoA, codigo_contracredito: codigoB, valor, numero_acto: numeroActo, descripcion });
+      } else if (tipo === "aplazamiento") {
+        await onSave({ codigo_rubro: codigoA, valor, numero_acto: numeroActo, descripcion });
+      } else {
+        await onSave({ codigo_origen: codigoA, codigo_destino: codigoB, valor, numero_acto: numeroActo, descripcion });
       }
       onClose();
     } finally { setLoading(false); }
   }
 
-  const labelA = tipo === "credito" ? "Rubro Crédito" : "Rubro Gasto";
-  const labelB = tipo === "credito" ? "Rubro Contracrédito" : "Rubro Ingreso";
+  const labelA = tipo === "credito" ? "Rubro Crédito" : tipo === "desplazamiento" ? "Rubro Origen" : "Rubro Gasto";
+  const labelB = tipo === "credito" ? "Rubro Contracrédito" : tipo === "desplazamiento" ? "Rubro Destino" : "Rubro Ingreso";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -88,17 +97,19 @@ function ModifForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5">
-            <Label>{labelB}</Label>
-            <Select value={codigoB} onValueChange={setCodigoB}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar rubro..." /></SelectTrigger>
-              <SelectContent>
-                {(tipo === "credito" ? gastosHojas : ingresosHojas).map((r) => (
-                  <SelectItem key={r.codigo} value={r.codigo}>{r.codigo} — {r.cuenta}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!esUnRubro && (
+            <div className="space-y-1.5">
+              <Label>{labelB}</Label>
+              <Select value={codigoB} onValueChange={setCodigoB}>
+                <SelectTrigger><SelectValue placeholder="Seleccionar rubro..." /></SelectTrigger>
+                <SelectContent>
+                  {(necesitaIngreso ? ingresosHojas : gastosHojas).map((r) => (
+                    <SelectItem key={r.codigo} value={r.codigo}>{r.codigo} — {r.cuenta}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label>Valor</Label>
             <CurrencyInput value={valor} onChange={setValor} />
@@ -115,7 +126,7 @@ function ModifForm({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={loading || valor <= 0 || !codigoA || !codigoB}>
+            <Button type="submit" disabled={loading || valor <= 0 || !codigoA || (!esUnRubro && !codigoB)}>
               {loading ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>
@@ -154,11 +165,13 @@ export default function ModificacionesPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleSave(data: AdicionCreate | ReduccionCreate | CreditoContracreditoCreate) {
+  async function handleSave(data: AdicionCreate | ReduccionCreate | CreditoContracreditoCreate | AplazamientoCreate | DesplazamientoCreate) {
     try {
       if (formTipo === "adicion") await modificacionesApi.crearAdicion(data as AdicionCreate);
       else if (formTipo === "reduccion") await modificacionesApi.crearReduccion(data as ReduccionCreate);
-      else await modificacionesApi.crearCredito(data as CreditoContracreditoCreate);
+      else if (formTipo === "credito") await modificacionesApi.crearCredito(data as CreditoContracreditoCreate);
+      else if (formTipo === "aplazamiento") await modificacionesApi.crearAplazamiento(data as AplazamientoCreate);
+      else await modificacionesApi.crearDesplazamiento(data as DesplazamientoCreate);
       toast({ title: "Modificación registrada" });
       load();
     } catch (e: unknown) {
@@ -225,21 +238,27 @@ export default function ModificacionesPage() {
       {error && <ErrorAlert message={error} onRetry={load} />}
       {!loading && !error && (
         <Tabs defaultValue="adicion">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <TabsList>
               <TabsTrigger value="adicion">Adiciones</TabsTrigger>
               <TabsTrigger value="reduccion">Reducciones</TabsTrigger>
-              <TabsTrigger value="credito">Créditos/Contracréditos</TabsTrigger>
+              <TabsTrigger value="credito">Créditos</TabsTrigger>
+              <TabsTrigger value="aplazamiento">Aplazamientos</TabsTrigger>
+              <TabsTrigger value="desplazamiento">Desplazamientos</TabsTrigger>
             </TabsList>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button size="sm" onClick={() => setFormTipo("adicion")}><PlusIcon className="h-4 w-4 mr-1" />Adición</Button>
               <Button size="sm" variant="outline" onClick={() => setFormTipo("reduccion")}><PlusIcon className="h-4 w-4 mr-1" />Reducción</Button>
               <Button size="sm" variant="outline" onClick={() => setFormTipo("credito")}><PlusIcon className="h-4 w-4 mr-1" />Crédito</Button>
+              <Button size="sm" variant="outline" onClick={() => setFormTipo("aplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Aplazamiento</Button>
+              <Button size="sm" variant="outline" onClick={() => setFormTipo("desplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Desplazamiento</Button>
             </div>
           </div>
-          <TabsContent value="adicion"><TablaModifs items={porTipo("Adicion")} /></TabsContent>
-          <TabsContent value="reduccion"><TablaModifs items={porTipo("Reduccion")} /></TabsContent>
-          <TabsContent value="credito"><TablaModifs items={porTipo("CreditoContracredito")} /></TabsContent>
+          <TabsContent value="adicion"><TablaModifs items={porTipo("ADICION")} /></TabsContent>
+          <TabsContent value="reduccion"><TablaModifs items={porTipo("REDUCCION")} /></TabsContent>
+          <TabsContent value="credito"><TablaModifs items={porTipo("CREDITO_CONTRACREDITO")} /></TabsContent>
+          <TabsContent value="aplazamiento"><TablaModifs items={porTipo("APLAZAMIENTO")} /></TabsContent>
+          <TabsContent value="desplazamiento"><TablaModifs items={porTipo("DESPLAZAMIENTO")} /></TabsContent>
         </Tabs>
       )}
       {formTipo && (

@@ -10,4 +10,9 @@ export interface DashboardResumen {
   recaudado: number;
   saldo_por_recaudar: number;
   equilibrio: number;
+  pct_cdp: number;
+  pct_comprometido: number;
+  pct_obligado: number;
+  pct_pagado: number;
+  pct_recaudado: number;
 }

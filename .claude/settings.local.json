@@ -28,7 +28,23 @@
       "Bash(npm install:*)",
       "Bash(git rm:*)",
       "Bash(git restore:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(wc:*)",
+      "Bash(\"D:/CONTABILIDAD EMPRESAS:*)",
+      "Bash(SERVICES_DIR=\"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/backend/app/services\")",
+      "Bash(__NEW_LINE_fc368114ce43e7e3__ python3:*)",
+      "Bash(done)",
+      "Bash(wmic process where \"name=''python.exe''\" get ProcessId,CommandLine)",
+      "Bash(wmic process:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(tail:*)",
+      "Bash(cd \"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/backend\" && \"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/.venv/Scripts/python.exe\" -c \"from app.routes import ia; print\\('OK'\\)\" 2>&1)",
+      "Bash(grep:*)",
+      "Bash(\"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/.venv/Scripts/pip.exe\" list:*)",
+      "Bash(\"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/.venv/Scripts/pip.exe\" install:*)",
+      "Bash(cd \"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/backend\" && \"D:/CONTABILIDAD EMPRESAS PORTATIL/PRESUPUESTOS 2026/sistema_presupuestal/.venv/Scripts/python.exe\" -c \"\nfrom google import genai\nclient = genai.Client\\(api_key='AIzaSyBGsbe5Jt2YpBKJ8IVD2ABSl1-25wDMoeA'\\)\nfor m in client.models.list\\(\\):\n    if 'generateContent' in \\(m.supported_actions or []\\):\n        print\\(m.name\\)\n\" 2>&1)",
+      "Bash(git:*)"
     ]
   }
 }

@@ -7,6 +7,36 @@ import { EquilibrioIndicator } from "@/components/dashboard/EquilibrioIndicator"
 import { BarraCadena } from "@/components/dashboard/BarraCadena";
 import { LoadingTable } from "@/components/common/LoadingTable";
 import { ErrorAlert } from "@/components/common/ErrorAlert";
+import { CurrencyDisplay } from "@/components/common/CurrencyDisplay";
+
+function IndicadorEjecucion({
+  label,
+  pct,
+  color,
+}: {
+  label: string;
+  pct: number;
+  color: string;
+}) {
+  const barColor =
+    pct >= 100 ? "bg-red-500" : pct >= 90 ? "bg-amber-500" : color;
+  const alertClass =
+    pct >= 100 ? "text-red-700 font-bold" : pct >= 90 ? "text-amber-700 font-semibold" : "text-slate-700";
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between items-center text-sm">
+        <span className="text-slate-600">{label}</span>
+        <span className={`font-mono ${alertClass}`}>{pct.toFixed(1)}%</span>
+      </div>
+      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${barColor}`}
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResumen | null>(null);
@@ -51,15 +81,48 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* KPIs Ingresos */}
-      <div>
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
-          Ejecución de Ingresos
-        </p>
-        <div className="grid grid-cols-3 gap-4">
-          <KpiCard title="Presupuesto Ingresos" value={data.ppto_ingresos} />
-          <KpiCard title="Recaudado" value={data.recaudado} />
-          <KpiCard title="Saldo por Recaudar" value={data.saldo_por_recaudar} />
+      {/* Indicadores de ejecución */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Gastos */}
+        <div className="bg-white rounded-lg border border-slate-200 p-5">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+            Indicadores de Ejecución — Gastos
+          </p>
+          <div className="space-y-4">
+            <IndicadorEjecucion label="CDP / Apropiación" pct={data.pct_cdp} color="bg-indigo-500" />
+            <IndicadorEjecucion label="Comprometido / Apropiación" pct={data.pct_comprometido} color="bg-violet-500" />
+            <IndicadorEjecucion label="Obligado / Apropiación" pct={data.pct_obligado} color="bg-amber-500" />
+            <IndicadorEjecucion label="Pagado / Apropiación" pct={data.pct_pagado} color="bg-emerald-500" />
+          </div>
+          {data.pct_pagado >= 90 && (
+            <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+              ⚠️ La ejecución de pagos supera el 90% de la apropiación
+            </div>
+          )}
+        </div>
+
+        {/* Ingresos */}
+        <div className="bg-white rounded-lg border border-slate-200 p-5">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+            Indicadores de Ejecución — Ingresos
+          </p>
+          <div className="space-y-4">
+            <IndicadorEjecucion label="Recaudado / Presupuesto" pct={data.pct_recaudado} color="bg-teal-500" />
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Presupuesto Ingresos</span>
+              <span className="font-mono text-slate-800"><CurrencyDisplay value={data.ppto_ingresos} /></span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Recaudado</span>
+              <span className="font-mono text-emerald-700"><CurrencyDisplay value={data.recaudado} /></span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-slate-100 pt-2">
+              <span className="text-slate-500">Saldo por Recaudar</span>
+              <span className="font-mono text-slate-800"><CurrencyDisplay value={data.saldo_por_recaudar} /></span>
+            </div>
+          </div>
         </div>
       </div>
 

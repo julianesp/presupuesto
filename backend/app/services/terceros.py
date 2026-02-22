@@ -3,26 +3,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.terceros import Tercero
 
 
-async def get_terceros(db: AsyncSession) -> list[Tercero]:
-    result = await db.execute(select(Tercero).order_by(Tercero.nombre))
+async def get_terceros(db: AsyncSession, tenant_id: str) -> list[Tercero]:
+    result = await db.execute(
+        select(Tercero).where(Tercero.tenant_id == tenant_id).order_by(Tercero.nombre)
+    )
     return list(result.scalars().all())
 
 
-async def get_tercero(db: AsyncSession, nit: str) -> Tercero | None:
-    result = await db.execute(select(Tercero).where(Tercero.nit == nit))
+async def get_tercero(db: AsyncSession, tenant_id: str, nit: str) -> Tercero | None:
+    result = await db.execute(
+        select(Tercero).where(Tercero.tenant_id == tenant_id, Tercero.nit == nit)
+    )
     return result.scalar_one_or_none()
 
 
-async def buscar(db: AsyncSession, filtro: str) -> list[Tercero]:
+async def buscar(db: AsyncSession, tenant_id: str, filtro: str) -> list[Tercero]:
     stmt = select(Tercero).where(
-        or_(Tercero.nit.ilike(f"%{filtro}%"), Tercero.nombre.ilike(f"%{filtro}%"))
+        Tercero.tenant_id == tenant_id,
+        or_(Tercero.nit.ilike(f"%{filtro}%"), Tercero.nombre.ilike(f"%{filtro}%")),
     ).order_by(Tercero.nombre)
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
-async def actualizar(db: AsyncSession, nit: str, data: dict) -> Tercero | None:
-    tercero = await get_tercero(db, nit)
+async def actualizar(db: AsyncSession, tenant_id: str, nit: str, data: dict) -> Tercero | None:
+    tercero = await get_tercero(db, tenant_id, nit)
     if not tercero:
         return None
     for k, v in data.items():
@@ -32,8 +37,8 @@ async def actualizar(db: AsyncSession, nit: str, data: dict) -> Tercero | None:
     return tercero
 
 
-async def eliminar(db: AsyncSession, nit: str) -> bool:
-    tercero = await get_tercero(db, nit)
+async def eliminar(db: AsyncSession, tenant_id: str, nit: str) -> bool:
+    tercero = await get_tercero(db, tenant_id, nit)
     if not tercero:
         return False
     await db.delete(tercero)
@@ -41,11 +46,11 @@ async def eliminar(db: AsyncSession, nit: str) -> bool:
     return True
 
 
-async def guardar(db: AsyncSession, nit: str, dv: str, nombre: str,
+async def guardar(db: AsyncSession, tenant_id: str, nit: str, dv: str, nombre: str,
                   direccion: str = "", telefono: str = "", email: str = "",
                   tipo: str = "Natural", banco: str = "", tipo_cuenta: str = "",
                   no_cuenta: str = "") -> Tercero:
-    existing = await get_tercero(db, nit)
+    existing = await get_tercero(db, tenant_id, nit)
     if existing:
         existing.dv = dv
         existing.nombre = nombre.upper()
@@ -60,6 +65,7 @@ async def guardar(db: AsyncSession, nit: str, dv: str, nombre: str,
         return existing
 
     tercero = Tercero(
+        tenant_id=tenant_id,
         nit=nit, dv=dv, nombre=nombre.upper(),
         direccion=direccion, telefono=telefono, email=email,
         tipo=tipo, banco=banco, tipo_cuenta=tipo_cuenta, no_cuenta=no_cuenta,

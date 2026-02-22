@@ -6,11 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.conceptos import Concepto
 
 
-async def guardar_concepto(db: AsyncSession, codigo_rubro: str, concepto: str):
+async def guardar_concepto(db: AsyncSession, tenant_id: str, codigo_rubro: str, concepto: str):
     if not concepto or not concepto.strip():
         return
     stmt = select(Concepto).where(
-        and_(Concepto.codigo_rubro == codigo_rubro, Concepto.concepto == concepto)
+        and_(
+            Concepto.tenant_id == tenant_id,
+            Concepto.codigo_rubro == codigo_rubro,
+            Concepto.concepto == concepto,
+        )
     )
     result = await db.execute(stmt)
     existing = result.scalar_one_or_none()
@@ -19,6 +23,7 @@ async def guardar_concepto(db: AsyncSession, codigo_rubro: str, concepto: str):
         existing.ultimo_uso = date.today().isoformat()
     else:
         db.add(Concepto(
+            tenant_id=tenant_id,
             codigo_rubro=codigo_rubro,
             concepto=concepto,
             veces_usado=1,
@@ -27,9 +32,10 @@ async def guardar_concepto(db: AsyncSession, codigo_rubro: str, concepto: str):
     await db.flush()
 
 
-async def get_conceptos(db: AsyncSession, codigo_rubro: str) -> list[Concepto]:
+async def get_conceptos(db: AsyncSession, tenant_id: str, codigo_rubro: str) -> list[Concepto]:
     stmt = select(Concepto).where(
-        Concepto.codigo_rubro == codigo_rubro
+        Concepto.tenant_id == tenant_id,
+        Concepto.codigo_rubro == codigo_rubro,
     ).order_by(Concepto.veces_usado.desc())
     result = await db.execute(stmt)
     return list(result.scalars().all())

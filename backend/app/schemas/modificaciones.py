@@ -25,6 +25,21 @@ class CreditoContracreditoCreate(BaseModel):
     descripcion: str = ""
 
 
+class AplazamientoCreate(BaseModel):
+    codigo_rubro: str
+    valor: float = Field(gt=0)
+    numero_acto: str = ""
+    descripcion: str = ""
+
+
+class DesplazamientoCreate(BaseModel):
+    codigo_origen: str
+    codigo_destino: str
+    valor: float = Field(gt=0)
+    numero_acto: str = ""
+    descripcion: str = ""
+
+
 class DetalleModificacionResponse(BaseModel):
     id: int
     codigo_rubro: str

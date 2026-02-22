@@ -112,7 +112,7 @@ export default function SifsePage() {
                             <SelectContent>
                               <SelectItem value="0">Sin mapeo</SelectItem>
                               {items.map((it) => (
-                                <SelectItem key={it.id} value={String(it.id)}>{it.id} — {it.nombre}</SelectItem>
+                                <SelectItem key={it.codigo} value={String(it.codigo)}>{it.codigo} — {it.descripcion}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -159,7 +159,7 @@ export default function SifsePage() {
                             <SelectContent>
                               <SelectItem value="0">Sin mapeo</SelectItem>
                               {fuentes.map((f) => (
-                                <SelectItem key={f.id} value={String(f.id)}>{f.id} — {f.nombre}</SelectItem>
+                                <SelectItem key={f.codigo} value={String(f.codigo)}>{f.codigo} — {f.descripcion}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>

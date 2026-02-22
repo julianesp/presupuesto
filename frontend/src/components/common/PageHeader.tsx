@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, PrinterIcon } from "lucide-react";
 
 interface Props {
   title: string;
@@ -8,9 +8,10 @@ interface Props {
     label: string;
     onClick: () => void;
   };
+  onPrint?: () => void;
 }
 
-export function PageHeader({ title, description, action }: Props) {
+export function PageHeader({ title, description, action, onPrint }: Props) {
   return (
     <div className="flex items-center justify-between mb-6">
       <div>
@@ -19,12 +20,20 @@ export function PageHeader({ title, description, action }: Props) {
           <p className="text-sm text-slate-500 mt-1">{description}</p>
         )}
       </div>
-      {action && (
-        <Button onClick={action.onClick}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          {action.label}
-        </Button>
-      )}
+      <div className="flex items-center gap-2">
+        {onPrint && (
+          <Button variant="outline" size="sm" onClick={onPrint} className="no-print">
+            <PrinterIcon className="h-4 w-4 mr-1" />
+            Imprimir
+          </Button>
+        )}
+        {action && (
+          <Button onClick={action.onClick} className="no-print">
+            <PlusIcon className="h-4 w-4 mr-2" />
+            {action.label}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -41,3 +41,18 @@ export interface CreditoContracreditoCreate {
   numero_acto?: string;
   descripcion?: string;
 }
+
+export interface AplazamientoCreate {
+  codigo_rubro: string;
+  valor: number;
+  numero_acto?: string;
+  descripcion?: string;
+}
+
+export interface DesplazamientoCreate {
+  codigo_origen: string;
+  codigo_destino: string;
+  valor: number;
+  numero_acto?: string;
+  descripcion?: string;
+}

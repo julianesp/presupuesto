@@ -14,6 +14,8 @@ interface Props {
   open: boolean;
   title?: string;
   description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
@@ -23,6 +25,8 @@ export function ConfirmDialog({
   open,
   title = "¿Confirmar acción?",
   description = "Esta acción no se puede deshacer.",
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
   onConfirm,
   onCancel,
   loading,
@@ -36,10 +40,10 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel} disabled={loading}>
-            Cancelar
+            {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} disabled={loading}>
-            {loading ? "Procesando..." : "Confirmar"}
+            {loading ? "Procesando..." : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

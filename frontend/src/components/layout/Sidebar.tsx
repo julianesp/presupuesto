@@ -18,7 +18,12 @@ import {
   Landmark,
   FileBarChart,
   Settings,
+  ShieldCheck,
+  ShieldAlert,
+  UploadCloud,
+  HardDriveDownload,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navGroups = [
   {
@@ -56,14 +61,20 @@ const navGroups = [
     label: "INFORMES",
     items: [
       { href: "/informes", label: "Informes", icon: BarChart2 },
+      { href: "/informes/cuentas-por-pagar", label: "Cuentas por Pagar", icon: ClipboardList },
+      { href: "/informes/pac-vs-ejecutado", label: "PAC vs Ejecutado", icon: Calendar },
+      { href: "/informes/tercero", label: "Informe Tercero", icon: Users },
+      { href: "/informes/sia", label: "SIA Contraloría", icon: ShieldAlert },
+      { href: "/sifse", label: "SIFSE", icon: FileBarChart },
     ],
   },
   {
     label: "CONFIGURACIÓN",
     items: [
+      { href: "/importacion", label: "Cargar Datos", icon: UploadCloud },
+      { href: "/backup", label: "Copias de Seguridad", icon: HardDriveDownload },
       { href: "/terceros", label: "Terceros", icon: Users },
       { href: "/cuentas-bancarias", label: "Cuentas Bancarias", icon: Landmark },
-      { href: "/sifse", label: "SIFSE", icon: FileBarChart },
       { href: "/configuracion", label: "Configuración", icon: Settings },
     ],
   },
@@ -71,6 +82,7 @@ const navGroups = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <aside className="w-60 min-h-screen bg-slate-900 text-slate-100 flex flex-col shrink-0">
@@ -109,6 +121,27 @@ export function Sidebar() {
             })}
           </div>
         ))}
+
+        {/* Panel de administración: solo visible para rol ADMIN */}
+        {user?.rol === "ADMIN" && (
+          <div className="mb-4">
+            <p className="px-4 py-1.5 text-[10px] font-semibold text-slate-500 tracking-widest uppercase">
+              ADMINISTRACIÓN
+            </p>
+            <Link
+              href="/admin"
+              className={cn(
+                "flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
+                pathname.startsWith("/admin")
+                  ? "bg-slate-700 text-white"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white",
+              )}
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              Panel Admin
+            </Link>
+          </div>
+        )}
       </nav>
     </aside>
   );

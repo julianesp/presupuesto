@@ -1,12 +1,11 @@
 export interface SIFSEFuente {
-  id: number;
-  nombre: string;
+  codigo: number;
+  descripcion: string;
 }
 
 export interface SIFSEItem {
-  id: number;
-  nombre: string;
-  fuente_id: number;
+  codigo: number;
+  descripcion: string;
 }
 
 export interface MapeoGasto {

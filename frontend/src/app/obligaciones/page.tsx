@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { obligacionesApi } from "@/lib/api/obligaciones";
 import { rpApi } from "@/lib/api/rp";
-import type { Obligacion, ObligacionCreate } from "@/lib/types/obligacion";
+import type { Obligacion, ObligacionCreate, ObligacionUpdate } from "@/lib/types/obligacion";
 import type { RP } from "@/lib/types/rp";
 import { PageHeader } from "@/components/common/PageHeader";
 import { LoadingTable } from "@/components/common/LoadingTable";
@@ -28,7 +28,55 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BanIcon } from "lucide-react";
+import { BanIcon, PencilIcon, FileTextIcon } from "lucide-react";
+import Link from "next/link";
+
+function EditObligacionForm({
+  item, onSave, onClose,
+}: {
+  item: Obligacion | null;
+  onSave: (d: ObligacionUpdate) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [valor, setValor] = useState(0);
+  const [factura, setFactura] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) { setValor(item.valor); setFactura(item.factura ?? ""); }
+  }, [item]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try { await onSave({ valor, factura }); onClose(); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={!!item} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Editar Obligación N° {item?.numero}</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>N° Factura</Label>
+            <Input value={factura} onChange={(e) => setFactura(e.target.value)} placeholder="Opcional" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Valor</Label>
+            <CurrencyInput value={valor} onChange={setValor} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || valor <= 0}>
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function ObligacionForm({
   open, rps, onSave, onClose,
@@ -101,6 +149,7 @@ export default function ObligacionesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [anulando, setAnulando] = useState<Obligacion | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
+  const [editando, setEditando] = useState<Obligacion | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -141,11 +190,25 @@ export default function ObligacionesPage() {
     } finally { setAnulLoading(false); }
   }
 
+  async function handleEdit(data: ObligacionUpdate) {
+    if (!editando) return;
+    try {
+      await obligacionesApi.update(editando.numero, data);
+      toast({ title: "Obligación actualizada" });
+      setEditando(null);
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+      throw e;
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Obligaciones"
         action={{ label: "Nueva Obligación", onClick: () => setFormOpen(true) }}
+        onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4"><FiltroEstado value={filtro} onChange={setFiltro} /></div>
       {loading && <LoadingTable />}
@@ -174,11 +237,23 @@ export default function ObligacionesPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={o.saldo ?? 0} /></TableCell>
                   <TableCell><EstadoBadge estado={o.estado} /></TableCell>
                   <TableCell>
-                    {o.estado === "Activo" && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(o)}>
-                        <BanIcon className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-0.5">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500" title="Ver Comprobante" asChild>
+                        <Link href={`/comprobantes/obligacion/${o.numero}`} target="_blank">
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                        </Link>
                       </Button>
-                    )}
+                      {o.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(o)} title="Editar">
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {o.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(o)} title="Anular">
+                          <BanIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -187,6 +262,7 @@ export default function ObligacionesPage() {
         </div>
       )}
       <ObligacionForm open={formOpen} rps={rps} onSave={handleSave} onClose={() => setFormOpen(false)} />
+      <EditObligacionForm item={editando} onSave={handleEdit} onClose={() => setEditando(null)} />
       <ConfirmDialog
         open={!!anulando}
         title="¿Anular obligación?"

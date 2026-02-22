@@ -3,9 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.cuentas_bancarias import CuentaBancaria
 
 
-async def crear(db: AsyncSession, banco: str, tipo_cuenta: str,
+async def crear(db: AsyncSession, tenant_id: str, banco: str, tipo_cuenta: str,
                 numero_cuenta: str, denominacion: str = "") -> CuentaBancaria:
     cuenta = CuentaBancaria(
+        tenant_id=tenant_id,
         banco=banco, tipo_cuenta=tipo_cuenta,
         numero_cuenta=numero_cuenta, denominacion=denominacion,
         estado="ACTIVA",
@@ -16,8 +17,8 @@ async def crear(db: AsyncSession, banco: str, tipo_cuenta: str,
     return cuenta
 
 
-async def listar(db: AsyncSession, solo_activas: bool = True) -> list[CuentaBancaria]:
-    stmt = select(CuentaBancaria)
+async def listar(db: AsyncSession, tenant_id: str, solo_activas: bool = True) -> list[CuentaBancaria]:
+    stmt = select(CuentaBancaria).where(CuentaBancaria.tenant_id == tenant_id)
     if solo_activas:
         stmt = stmt.where(CuentaBancaria.estado == "ACTIVA")
     stmt = stmt.order_by(CuentaBancaria.id)
@@ -25,14 +26,16 @@ async def listar(db: AsyncSession, solo_activas: bool = True) -> list[CuentaBanc
     return list(result.scalars().all())
 
 
-async def get_cuenta(db: AsyncSession, id: int) -> CuentaBancaria | None:
-    result = await db.execute(select(CuentaBancaria).where(CuentaBancaria.id == id))
+async def get_cuenta(db: AsyncSession, tenant_id: str, id: int) -> CuentaBancaria | None:
+    result = await db.execute(
+        select(CuentaBancaria).where(CuentaBancaria.tenant_id == tenant_id, CuentaBancaria.id == id)
+    )
     return result.scalar_one_or_none()
 
 
-async def editar(db: AsyncSession, id: int, banco: str, tipo_cuenta: str,
+async def editar(db: AsyncSession, tenant_id: str, id: int, banco: str, tipo_cuenta: str,
                  numero_cuenta: str, denominacion: str) -> CuentaBancaria:
-    cuenta = await get_cuenta(db, id)
+    cuenta = await get_cuenta(db, tenant_id, id)
     if not cuenta:
         raise ValueError(f"Cuenta bancaria {id} no encontrada")
     cuenta.banco = banco
@@ -44,8 +47,8 @@ async def editar(db: AsyncSession, id: int, banco: str, tipo_cuenta: str,
     return cuenta
 
 
-async def desactivar(db: AsyncSession, id: int):
-    cuenta = await get_cuenta(db, id)
+async def desactivar(db: AsyncSession, tenant_id: str, id: int):
+    cuenta = await get_cuenta(db, tenant_id, id)
     if not cuenta:
         raise ValueError(f"Cuenta bancaria {id} no encontrada")
     cuenta.estado = "INACTIVA"

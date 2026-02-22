@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { rpApi } from "@/lib/api/rp";
 import { cdpApi } from "@/lib/api/cdp";
 import { tercerosApi } from "@/lib/api/terceros";
-import type { RP, RPCreate } from "@/lib/types/rp";
+import type { RP, RPCreate, RPUpdate } from "@/lib/types/rp";
 import type { CDP } from "@/lib/types/cdp";
 import type { Tercero } from "@/lib/types/tercero";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -30,7 +30,8 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { BanIcon } from "lucide-react";
+import { BanIcon, PencilIcon, FileTextIcon } from "lucide-react";
+import Link from "next/link";
 
 function RpForm({
   open, cdps, terceros, onSave, onClose,
@@ -122,6 +123,53 @@ function RpForm({
   );
 }
 
+function EditRpForm({
+  item, onSave, onClose,
+}: {
+  item: RP | null;
+  onSave: (d: RPUpdate) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [valor, setValor] = useState(0);
+  const [objeto, setObjeto] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) { setValor(item.valor); setObjeto(item.objeto); }
+  }, [item]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try { await onSave({ valor, objeto }); onClose(); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open={!!item} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>Editar RP N° {item?.numero}</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Objeto del RP</Label>
+            <Input value={objeto} onChange={(e) => setObjeto(e.target.value)} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Valor</Label>
+            <CurrencyInput value={valor} onChange={setValor} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={loading || valor <= 0}>
+              {loading ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RpPage() {
   const [rps, setRps] = useState<RP[]>([]);
   const [cdps, setCdps] = useState<CDP[]>([]);
@@ -132,6 +180,7 @@ export default function RpPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [anulando, setAnulando] = useState<RP | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
+  const [editando, setEditando] = useState<RP | null>(null);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -174,11 +223,25 @@ export default function RpPage() {
     } finally { setAnulLoading(false); }
   }
 
+  async function handleEdit(data: RPUpdate) {
+    if (!editando) return;
+    try {
+      await rpApi.update(editando.numero, data);
+      toast({ title: "RP actualizado" });
+      setEditando(null);
+      load();
+    } catch (e: unknown) {
+      toast({ variant: "destructive", title: e instanceof Error ? e.message : "Error" });
+      throw e;
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Registros Presupuestales (RP)"
         action={{ label: "Nuevo RP", onClick: () => setFormOpen(true) }}
+        onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4">
         <FiltroEstado value={filtro} onChange={setFiltro} />
@@ -209,11 +272,29 @@ export default function RpPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={r.saldo ?? 0} /></TableCell>
                   <TableCell><EstadoBadge estado={r.estado} /></TableCell>
                   <TableCell>
-                    {r.estado === "Activo" && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)}>
-                        <BanIcon className="h-3.5 w-3.5" />
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500" title="Ver Comprobante" asChild>
+                        <Link href={`/comprobantes/rp/${r.numero}`} target="_blank">
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                        </Link>
                       </Button>
-                    )}
+                      {r.estado === "Activo" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-blue-500"
+                          onClick={() => setEditando(r)}
+                          title="Editar"
+                        >
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {r.estado === "Activo" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)} title="Anular">
+                          <BanIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -230,6 +311,7 @@ export default function RpPage() {
         onCancel={() => setAnulando(null)}
         loading={anulLoading}
       />
+      <EditRpForm item={editando} onSave={handleEdit} onClose={() => setEditando(null)} />
     </div>
   );
 }

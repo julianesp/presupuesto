@@ -12,14 +12,19 @@ interface Props {
   onChange: (val: string) => void;
 }
 
+const TODOS = "__todos__";
+
 export function FiltroEstado({ value, onChange }: Props) {
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select
+      value={value === "" ? TODOS : value}
+      onValueChange={(v) => onChange(v === TODOS ? "" : v)}
+    >
       <SelectTrigger className="w-36">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="">Todos</SelectItem>
+        <SelectItem value={TODOS}>Todos</SelectItem>
         <SelectItem value="Activo">Activos</SelectItem>
         <SelectItem value="Anulado">Anulados</SelectItem>
       </SelectContent>

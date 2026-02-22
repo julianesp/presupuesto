@@ -4,6 +4,8 @@ import type {
   AdicionCreate,
   ReduccionCreate,
   CreditoContracreditoCreate,
+  AplazamientoCreate,
+  DesplazamientoCreate,
 } from "@/lib/types/modificacion";
 
 export const modificacionesApi = {
@@ -14,6 +16,10 @@ export const modificacionesApi = {
     api.post<Modificacion>("/api/modificaciones/reduccion", data),
   crearCredito: (data: CreditoContracreditoCreate) =>
     api.post<Modificacion>("/api/modificaciones/credito-contracredito", data),
+  crearAplazamiento: (data: AplazamientoCreate) =>
+    api.post<Modificacion>("/api/modificaciones/aplazamiento", data),
+  crearDesplazamiento: (data: DesplazamientoCreate) =>
+    api.post<Modificacion>("/api/modificaciones/desplazamiento", data),
   anular: (id: number) =>
     api.put<void>(`/api/modificaciones/${id}/anular`),
 };

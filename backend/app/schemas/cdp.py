@@ -6,6 +6,7 @@ class CDPCreate(BaseModel):
     objeto: str
     valor: float = Field(gt=0)
     fuente_sifse: int = 0
+    item_sifse: int = 0
 
 
 class CDPUpdate(BaseModel):
