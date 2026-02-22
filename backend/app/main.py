@@ -34,7 +34,7 @@ from app.routes import (
     consolidacion,
     backup,
     comprobantes,
-    ia,
+    # ia,  # FASE 5 - Gemini IA (comentado temporalmente)
 )
 
 
@@ -131,7 +131,7 @@ app.include_router(importacion.router)
 app.include_router(consolidacion.router)
 app.include_router(backup.router)
 app.include_router(comprobantes.router)
-app.include_router(ia.router)
+# app.include_router(ia.router)  # FASE 5 - Gemini IA (comentado temporalmente)
 
 
 @app.get("/", tags=["Health"])

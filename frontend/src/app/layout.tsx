@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ChatButton } from "@/components/ia/ChatButton";
+// import { ChatButton } from "@/components/ia/ChatButton";  // FASE 5 - Gemini IA (comentado temporalmente)
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <AppShell>{children}</AppShell>
-          <ChatButton />
+          {/* <ChatButton /> */}{/* FASE 5 - Gemini IA (comentado temporalmente) */}
         </AuthProvider>
         <Toaster />
       </body>
