@@ -2,7 +2,7 @@ services:
   - type: web
     name: sistema-presupuestal-api
     runtime: python
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: cd backend && bash build.sh
     startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
@@ -15,6 +15,10 @@ services:
         value: https://presupuesto-teal.vercel.app
       - key: SECRET_KEY
         generateValue: true
+      - key: CLERK_SECRET_KEY
+        value: sk_test_SSy4i9MiW3vZy6JM2NqNxcc6stTqvX7XZO02fIgWnB
+      - key: CLERK_PUBLISHABLE_KEY
+        value: pk_test_YXBwYXJlbnQtaW5zZWN0LTg0LmNsZXJrLmFjY291bnRzLmRldiQ
 
 databases:
   - name: sistema-presupuestal-db
