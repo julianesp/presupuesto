@@ -7,8 +7,15 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-key-cambiar-en-produccion"
     CORS_ORIGINS: str = "http://localhost:3000"
     ENVIRONMENT: str = "development"
+
+    # Clerk Authentication (reemplaza Cloudflare Access)
+    CLERK_SECRET_KEY: str = ""
+    CLERK_PUBLISHABLE_KEY: str = ""
+
+    # Cloudflare Access (legacy - mantener para compatibilidad)
     CF_TEAM_DOMAIN: str = ""   # e.g. "mi-equipo.cloudflareaccess.com" (solo producción)
     CF_AUD: str = ""            # Audience tag de la aplicación en CF Access (solo producción)
+
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
 

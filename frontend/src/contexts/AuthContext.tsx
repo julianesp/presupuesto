@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useAuth as useClerkAuth, useUser } from "@clerk/nextjs";
 import type { UserInfo } from "@/lib/types/auth";
 
 interface AuthState {
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthState>({
   logout: () => {},
 });
 
-async function fetchMe(): Promise<UserInfo | null> {
+async function fetchMe(token: string | null): Promise<UserInfo | null> {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 
@@ -32,15 +33,9 @@ async function fetchMe(): Promise<UserInfo | null> {
 
   if (isDev) {
     headers["X-Dev-Email"] = "admin@localhost";
-  } else {
-    // Leer el JWT de Cloudflare Access desde la cookie
-    const match =
-      typeof document !== "undefined"
-        ? document.cookie.match(/CF_Authorization=([^;]+)/)
-        : null;
-    if (match) {
-      headers["Authorization"] = `Bearer ${match[1]}`;
-    }
+  } else if (token) {
+    // Usar el JWT de Clerk
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${BASE_URL}/api/auth/me`, { headers });
@@ -49,26 +44,31 @@ async function fetchMe(): Promise<UserInfo | null> {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { getToken, signOut } = useClerkAuth();
+  const { isLoaded: clerkLoaded, isSignedIn } = useUser();
   const [user, setUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchMe()
+    if (!clerkLoaded) return;
+
+    if (!isSignedIn) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    getToken()
+      .then((token) => fetchMe(token))
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [clerkLoaded, isSignedIn, getToken]);
 
-  const logout = useCallback(() => {
-    const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
-    if (isDev) {
-      setUser(null);
-      window.location.href = "/login";
-    } else {
-      const cfUrl = process.env.NEXT_PUBLIC_CF_ACCESS_URL || "";
-      window.location.href = `${cfUrl}/cdn-cgi/access/logout`;
-    }
-  }, []);
+  const logout = useCallback(async () => {
+    await signOut();
+    setUser(null);
+  }, [signOut]);
 
   return (
     <AuthContext.Provider

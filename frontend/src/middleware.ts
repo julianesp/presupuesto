@@ -1,23 +1,22 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export function middleware(request: NextRequest) {
-  const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/webhooks(.*)",
+]);
 
-  // En desarrollo no se verifica auth (el backend acepta X-Dev-Email)
-  if (isDev) return NextResponse.next();
-
-  // En producción: Cloudflare Access ya interceptó la request antes de llegar aquí.
-  // Si la cookie CF_Authorization no existe, redirigir al login.
-  const cfToken = request.cookies.get("CF_Authorization");
-  if (!cfToken) {
-    return NextResponse.redirect(new URL("/login", request.url));
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect();
   }
-
-  return NextResponse.next();
-}
+});
 
 export const config = {
-  // Proteger todas las rutas excepto login y assets de Next.js
-  matcher: ["/((?!login|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };

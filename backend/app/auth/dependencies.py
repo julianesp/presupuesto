@@ -6,7 +6,7 @@ En desarrollo (ENVIRONMENT=development):
   - Si el usuario no existe en la DB, se crea automáticamente con rol ADMIN.
 
 En producción (ENVIRONMENT=production):
-  - Se verifica el JWT de Cloudflare Access en el header Authorization: Bearer <token>.
+  - Se verifica el JWT de Clerk en el header Authorization: Bearer <token>.
   - El usuario debe existir en la tabla users (el admin lo crea previamente).
 """
 
@@ -17,7 +17,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.cloudflare import verify_cf_token
+from app.auth.clerk_auth import verify_clerk_token
 from app.config import get_settings
 from app.database import get_db
 
@@ -32,7 +32,7 @@ async def get_current_user(
     """
     Retorna el User autenticado.
     - Dev: lee X-Dev-Email, crea user/tenant automáticamente si no existe.
-    - Prod: verifica JWT de CF Access, busca user en DB.
+    - Prod: verifica JWT de Clerk, busca user en DB.
     """
     # Import local para evitar circular imports
     from app.models.tenant import Tenant, User
@@ -43,20 +43,31 @@ async def get_current_user(
         email = request.headers.get("X-Dev-Email", "admin@localhost")
         return await _get_or_create_dev_user(db, email)
 
-    # Producción: verificar CF JWT
+    # Producción: verificar Clerk JWT
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token de autenticación requerido")
 
     token = auth_header.removeprefix("Bearer ")
     try:
-        payload = await verify_cf_token(token)
+        payload = await verify_clerk_token(token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    email = payload.get("email") or payload.get("sub", "")
-    if not email:
-        raise HTTPException(status_code=401, detail="El token no contiene email")
+    # Clerk almacena el email en diferentes campos dependiendo de la configuración
+    # Intentar obtener el email de varios campos posibles
+    email = (
+        payload.get("email") or
+        payload.get("primary_email_address_id") or
+        payload.get("sub", "")
+    )
+
+    # Si el email no está directamente en el payload, puede estar en el campo 'email_verified'
+    # o necesitamos extraerlo del 'sub' que tiene formato: user_xxxxx
+    if not email or not "@" in str(email):
+        # En Clerk, a veces necesitamos usar metadata adicional
+        # Por ahora, si no encontramos email, rechazamos
+        raise HTTPException(status_code=401, detail="El token no contiene email válido")
 
     stmt = select(User).where(User.email == email, User.activo == True)
     result = await db.execute(stmt)

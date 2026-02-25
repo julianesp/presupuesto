@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -19,14 +20,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body className={inter.className}>
-        <AuthProvider>
-          <AppShell>{children}</AppShell>
-          {/* <ChatButton /> */}{/* FASE 5 - Gemini IA (comentado temporalmente) */}
-        </AuthProvider>
-        <Toaster />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="es">
+        <body className={inter.className}>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+            {/* <ChatButton /> */}{/* FASE 5 - Gemini IA (comentado temporalmente) */}
+          </AuthProvider>
+          <Toaster />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
