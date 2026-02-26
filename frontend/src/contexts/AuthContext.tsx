@@ -55,14 +55,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isSignedIn) {
       setUser(null);
       setIsLoading(false);
+      // Limpiar el token cuando el usuario no está autenticado
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("clerk_token");
+      }
       return;
     }
 
-    getToken()
+    const updateToken = async () => {
+      const token = await getToken();
+      // Guardar el token en sessionStorage para que el cliente de API pueda usarlo
+      if (typeof window !== "undefined" && token) {
+        sessionStorage.setItem("clerk_token", token);
+      }
+      return token;
+    };
+
+    // Actualizar el token inicialmente
+    updateToken()
       .then((token) => fetchMe(token))
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
+
+    // Refrescar el token cada 5 minutos para mantenerlo actualizado
+    const intervalId = setInterval(() => {
+      if (isSignedIn) {
+        updateToken().catch(() => {
+          // Ignorar errores silenciosamente
+        });
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(intervalId);
   }, [clerkLoaded, isSignedIn, getToken]);
 
   const logout = useCallback(async () => {
