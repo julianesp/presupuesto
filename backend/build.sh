@@ -14,4 +14,9 @@ else
   echo "✅ Migraciones ejecutadas exitosamente"
 fi
 
+# Crear usuarios administradores
+echo "📝 Creando usuarios administradores..."
+python add_admin_users.py
+echo "✅ Usuarios administradores verificados"
+
 echo "✅ Build completado"
