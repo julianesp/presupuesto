@@ -25,21 +25,32 @@ async def _get_clerk_public_keys() -> list[dict]:
     settings = get_settings()
     # Extraer el dominio de Clerk de la publishable key
     # Format: pk_test_xxx o pk_live_xxx
-    # El JWKS URL es: https://[clerk-domain]/.well-known/jwks.json
-    # Para obtener el dominio correcto, usamos la API de Clerk
-    # Simplificado: usar el dominio estándar de Clerk
-    
-    # La publishable key contiene el dominio codificado
-    # Por ahora, usamos el endpoint estándar
     pub_key = settings.CLERK_PUBLISHABLE_KEY
-    
+
     # Decodificar la publishable key para obtener el dominio
     # Format: pk_test_{base64-encoded-instance-id}
     # El dominio es: {instance-id}.clerk.accounts.dev para test
     # o {instance-id}.clerk.accounts.com para production
-    
-    # Simplificado: extraer de la variable de entorno o usar el formato estándar
-    clerk_domain = "apparent-insect-84.clerk.accounts.dev"  # Extraído del publishable key
+    import base64
+
+    # Extraer la parte después del prefijo pk_test_ o pk_live_
+    if pub_key.startswith("pk_test_"):
+        instance_part = pub_key.replace("pk_test_", "")
+        env_suffix = "clerk.accounts.dev"
+    elif pub_key.startswith("pk_live_"):
+        instance_part = pub_key.replace("pk_live_", "")
+        env_suffix = "clerk.accounts.com"
+    else:
+        raise ValueError("Formato de CLERK_PUBLISHABLE_KEY inválido")
+
+    # Decodificar base64 para obtener el dominio
+    try:
+        decoded = base64.b64decode(instance_part + "==").decode('utf-8')
+        clerk_domain = decoded
+    except Exception:
+        # Si falla la decodificación, usar el dominio completo directamente
+        # ya que algunas publishable keys contienen el dominio sin codificar
+        clerk_domain = f"{instance_part}.{env_suffix}"
     
     url = f"https://{clerk_domain}/.well-known/jwks.json"
     async with httpx.AsyncClient(timeout=10.0) as client:
