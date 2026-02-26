@@ -8,6 +8,7 @@ import { BarraCadena } from "@/components/dashboard/BarraCadena";
 import { LoadingTable } from "@/components/common/LoadingTable";
 import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { CurrencyDisplay } from "@/components/common/CurrencyDisplay";
+import { useAuth } from "@/contexts/AuthContext";
 
 function IndicadorEjecucion({
   label,
@@ -39,6 +40,7 @@ function IndicadorEjecucion({
 }
 
 export default function DashboardPage() {
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
   const [data, setData] = useState<DashboardResumen | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,9 +58,14 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    // Solo cargar datos cuando la autenticación esté lista
+    if (!authLoading && isAuthenticated) {
+      load();
+    }
+  }, [authLoading, isAuthenticated]);
 
-  if (loading) return <LoadingTable rows={6} cols={3} />;
+  if (authLoading || loading) return <LoadingTable rows={6} cols={3} />;
   if (error) return <ErrorAlert message={error} onRetry={load} />;
   if (!data) return null;
 

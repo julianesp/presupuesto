@@ -10,16 +10,31 @@ export class ApiError extends Error {
   }
 }
 
-function getAuthHeaders(): Record<string, string> {
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
   if (isDev) {
     return { "X-Dev-Email": "admin@localhost" };
   }
-  // En producción: leer cookie CF_Authorization (no es HttpOnly)
-  if (typeof document !== "undefined") {
-    const match = document.cookie.match(/CF_Authorization=([^;]+)/);
-    if (match) {
-      return { Authorization: `Bearer ${match[1]}` };
+  // En producción: obtener token directamente de Clerk
+  if (typeof window !== "undefined") {
+    try {
+      // Obtener token de Clerk directamente
+      const token = sessionStorage.getItem("clerk_token");
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
+      }
+
+      // Si no está en sessionStorage, intentar obtener de window.Clerk
+      const clerk = (window as any).Clerk;
+      if (clerk?.session) {
+        const freshToken = await clerk.session.getToken();
+        if (freshToken) {
+          sessionStorage.setItem("clerk_token", freshToken);
+          return { Authorization: `Bearer ${freshToken}` };
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener token de Clerk:", error);
     }
   }
   return {};
@@ -30,10 +45,11 @@ async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${BASE_URL}${path}`;
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      ...getAuthHeaders(),
+      ...authHeaders,
       ...options.headers,
     },
     ...options,
