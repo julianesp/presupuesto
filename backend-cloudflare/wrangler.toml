@@ -1,0 +1,28 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "presupuesto-backend"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Variables de entorno
+[vars]
+ENVIRONMENT = "development"
+CORS_ORIGINS = "http://localhost:3000,https://presupuesto-teal.vercel.app"
+
+# Clerk Authentication
+# CLERK_SECRET_KEY y CLERK_PUBLISHABLE_KEY se deben configurar como secrets
+
+# D1 Database - Local para desarrollo
+[[d1_databases]]
+binding = "DB"
+database_name = "presupuesto-db"
+database_id = "local-db-id"  # Se generará al crear la base de datos
+migrations_dir = "drizzle/migrations"
+
+# Configuración de Workers
+[build]
+command = "npm run type-check"
+
+# Límites de Workers (Free tier)
+[limits]
+cpu_ms = 10
