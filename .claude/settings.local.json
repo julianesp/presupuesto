@@ -6,7 +6,20 @@
       "Bash(source:*)",
       "Bash(pip install:*)",
       "Bash(python add_admin_users.py:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(test:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm view:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Bash(sqlite3:*)",
+      "Bash(wrangler d1 execute:*)",
+      "Bash(npm run add-user:*)"
     ],
     "deny": [],
     "ask": []
