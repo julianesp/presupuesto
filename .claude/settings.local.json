@@ -29,7 +29,11 @@
       "Bash(wrangler secret:*)",
       "Bash(cat:*)",
       "Bash(xargs kill:*)",
-      "Bash(wrangler d1 migrations list:*)"
+      "Bash(wrangler d1 migrations list:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run migrate-old-data:*)",
+      "Bash(find:*)",
+      "Bash(npm run import-excel:*)"
     ],
     "deny": [],
     "ask": []
