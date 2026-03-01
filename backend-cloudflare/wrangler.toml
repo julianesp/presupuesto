@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 # Variables de entorno
 [vars]
 ENVIRONMENT = "development"
-CORS_ORIGINS = "http://localhost:3000,https://presupuesto-teal.vercel.app"
+CORS_ORIGINS = "http://localhost:3000,https://presupuesto-teal.vercel.app,https://finanzaspres.com,https://www.finanzaspres.com"
 
 # Clerk Authentication
 # CLERK_SECRET_KEY y CLERK_PUBLISHABLE_KEY se deben configurar como secrets
