@@ -3,13 +3,13 @@
  */
 
 export interface Env {
-  // D1 Database
-  DB: D1Database;
+  // D1 Database (solo en Cloudflare Workers)
+  DB?: D1Database;
 
   // Secrets
   CLERK_SECRET_KEY: string;
   CLERK_PUBLISHABLE_KEY: string;
-  SECRET_KEY: string;
+  SECRET_KEY?: string;
 
   // Variables
   ENVIRONMENT: string;

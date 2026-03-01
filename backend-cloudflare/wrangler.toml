@@ -12,17 +12,13 @@ CORS_ORIGINS = "http://localhost:3000,https://presupuesto-teal.vercel.app"
 # Clerk Authentication
 # CLERK_SECRET_KEY y CLERK_PUBLISHABLE_KEY se deben configurar como secrets
 
-# D1 Database - Local para desarrollo
+# D1 Database - Producción
 [[d1_databases]]
 binding = "DB"
 database_name = "presupuesto-db"
-database_id = "local-db-id"  # Se generará al crear la base de datos
+database_id = "3007a843-c740-4aae-b576-b81f30d89491"
 migrations_dir = "drizzle/migrations"
 
 # Configuración de Workers
 [build]
 command = "npm run type-check"
-
-# Límites de Workers (Free tier)
-[limits]
-cpu_ms = 10

@@ -21,7 +21,11 @@
       "Bash(wrangler d1 execute:*)",
       "Bash(npm run add-user:*)",
       "Bash(lsof:*)",
-      "Bash(killall:*)"
+      "Bash(killall:*)",
+      "Bash(wrangler d1 create:*)",
+      "Bash(wrangler d1 migrations apply:*)",
+      "Bash(wrangler secret put:*)",
+      "Bash(wrangler deploy:*)"
     ],
     "deny": [],
     "ask": []
