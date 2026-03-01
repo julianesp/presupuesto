@@ -14,11 +14,14 @@ const ROL_LABELS: Record<string, string> = {
 
 export function TopBar() {
   const [config, setConfig] = useState<Config | null>(null);
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    configApi.get().then(setConfig).catch(() => null);
-  }, []);
+    // Solo cargar config cuando el usuario esté autenticado
+    if (!isLoading && isAuthenticated) {
+      configApi.get().then(setConfig).catch(() => null);
+    }
+  }, [isLoading, isAuthenticated]);
 
   const mes = config?.mes_actual ? mesNombre(parseInt(config.mes_actual)) : "";
 

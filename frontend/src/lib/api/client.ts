@@ -18,20 +18,19 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   // En producción: obtener token directamente de Clerk
   if (typeof window !== "undefined") {
     try {
-      // Obtener token de Clerk directamente
-      const token = sessionStorage.getItem("clerk_token");
-      if (token) {
-        return { Authorization: `Bearer ${token}` };
-      }
-
-      // Si no está en sessionStorage, intentar obtener de window.Clerk
+      // Intentar obtener de window.Clerk primero (más confiable)
       const clerk = (window as any).Clerk;
       if (clerk?.session) {
         const freshToken = await clerk.session.getToken();
         if (freshToken) {
-          sessionStorage.setItem("clerk_token", freshToken);
           return { Authorization: `Bearer ${freshToken}` };
         }
+      }
+
+      // Fallback: obtener de sessionStorage si Clerk no está disponible
+      const token = sessionStorage.getItem("clerk_token");
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
       }
     } catch (error) {
       console.error("Error al obtener token de Clerk:", error);
@@ -55,14 +54,11 @@ async function apiFetch<T>(
     ...options,
   });
 
-  // Si el token está expirado (401), limpiar y redirigir a sign-in
+  // Si el token está expirado (401), limpiar sessionStorage
+  // pero NO redirigir porque Clerk ya maneja eso
   if (res.status === 401) {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("clerk_token");
-      // Redirigir a sign-in si no estamos ya ahí
-      if (!window.location.pathname.includes("/sign-in")) {
-        window.location.href = "/sign-in";
-      }
     }
   }
 

@@ -25,7 +25,11 @@
       "Bash(wrangler d1 create:*)",
       "Bash(wrangler d1 migrations apply:*)",
       "Bash(wrangler secret put:*)",
-      "Bash(wrangler deploy:*)"
+      "Bash(wrangler deploy:*)",
+      "Bash(wrangler secret:*)",
+      "Bash(cat:*)",
+      "Bash(xargs kill:*)",
+      "Bash(wrangler d1 migrations list:*)"
     ],
     "deny": [],
     "ask": []
