@@ -23,7 +23,10 @@ const AuthContext = createContext<AuthState>({
   logout: () => {},
 });
 
-async function fetchMe(token: string | null): Promise<UserInfo | null> {
+async function fetchMe(
+  token: string | null,
+  onTokenExpired?: () => void,
+): Promise<UserInfo | null> {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 
@@ -39,6 +42,13 @@ async function fetchMe(token: string | null): Promise<UserInfo | null> {
   }
 
   const res = await fetch(`${BASE_URL}/api/auth/me`, { headers });
+
+  // Si el token está expirado (401), llamar al callback
+  if (res.status === 401 && onTokenExpired) {
+    onTokenExpired();
+    return null;
+  }
+
   if (!res.ok) return null;
   return res.json();
 }
@@ -62,6 +72,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const handleTokenExpired = () => {
+      // Limpiar el token expirado
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("clerk_token");
+      }
+      // Cerrar sesión automáticamente
+      signOut();
+      setUser(null);
+    };
+
     const updateToken = async () => {
       const token = await getToken();
       // Guardar el token en sessionStorage para que el cliente de API pueda usarlo
@@ -73,22 +93,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Actualizar el token inicialmente
     updateToken()
-      .then((token) => fetchMe(token))
+      .then((token) => fetchMe(token, handleTokenExpired))
       .then(setUser)
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
 
-    // Refrescar el token cada 5 minutos para mantenerlo actualizado
+    // Refrescar el token cada 1 minuto para mantenerlo actualizado
     const intervalId = setInterval(() => {
       if (isSignedIn) {
-        updateToken().catch(() => {
-          // Ignorar errores silenciosamente
-        });
+        updateToken()
+          .then((token) => fetchMe(token, handleTokenExpired))
+          .then((userData) => {
+            if (userData) setUser(userData);
+          })
+          .catch(() => {
+            // Ignorar errores silenciosamente
+          });
       }
-    }, 5 * 60 * 1000); // 5 minutos
+    }, 60 * 1000); // 1 minuto
 
     return () => clearInterval(intervalId);
-  }, [clerkLoaded, isSignedIn, getToken]);
+  }, [clerkLoaded, isSignedIn, getToken, signOut]);
 
   const logout = useCallback(async () => {
     await signOut();

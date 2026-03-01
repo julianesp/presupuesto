@@ -19,7 +19,9 @@
       "Bash(pkill:*)",
       "Bash(sqlite3:*)",
       "Bash(wrangler d1 execute:*)",
-      "Bash(npm run add-user:*)"
+      "Bash(npm run add-user:*)",
+      "Bash(lsof:*)",
+      "Bash(killall:*)"
     ],
     "deny": [],
     "ask": []

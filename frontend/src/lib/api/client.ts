@@ -54,6 +54,18 @@ async function apiFetch<T>(
     },
     ...options,
   });
+
+  // Si el token está expirado (401), limpiar y redirigir a sign-in
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("clerk_token");
+      // Redirigir a sign-in si no estamos ya ahí
+      if (!window.location.pathname.includes("/sign-in")) {
+        window.location.href = "/sign-in";
+      }
+    }
+  }
+
   if (!res.ok) {
     let msg = `Error ${res.status}`;
     try {
