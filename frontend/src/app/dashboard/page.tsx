@@ -19,20 +19,23 @@ function IndicadorEjecucion({
   pct: number;
   color: string;
 }) {
+  // Asegurarnos de que pct sea un número válido
+  const safePct = typeof pct === 'number' && !isNaN(pct) ? pct : 0;
+
   const barColor =
-    pct >= 100 ? "bg-red-500" : pct >= 90 ? "bg-amber-500" : color;
+    safePct >= 100 ? "bg-red-500" : safePct >= 90 ? "bg-amber-500" : color;
   const alertClass =
-    pct >= 100 ? "text-red-700 font-bold" : pct >= 90 ? "text-amber-700 font-semibold" : "text-slate-700";
+    safePct >= 100 ? "text-red-700 font-bold" : safePct >= 90 ? "text-amber-700 font-semibold" : "text-slate-700";
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center text-sm">
         <span className="text-slate-600">{label}</span>
-        <span className={`font-mono ${alertClass}`}>{pct.toFixed(1)}%</span>
+        <span className={`font-mono ${alertClass}`}>{safePct.toFixed(1)}%</span>
       </div>
       <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
-          style={{ width: `${Math.min(pct, 100)}%` }}
+          style={{ width: `${Math.min(safePct, 100)}%` }}
         />
       </div>
     </div>

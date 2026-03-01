@@ -41,15 +41,36 @@ export const clerkAuth = createMiddleware<{ Bindings: Env; Variables: Variables 
         (payload.primary_email_address as string) ||
         '';
 
-      // Si no hay email en el token, necesitamos obtenerlo de Clerk
+      // Si no hay email en el token, obtenerlo de Clerk usando la API
       if (!email && clerkUserId) {
-        // Log para debug
-        console.log('Token payload keys:', Object.keys(payload));
-        console.log('Payload completo:', JSON.stringify(payload));
-        return c.json({
-          error: 'Email no encontrado en el token. Por favor, configura el JWT template en Clerk para incluir el email.',
-          debug: Object.keys(payload)
-        }, 401);
+        try {
+          const clerkApiUrl = `https://api.clerk.com/v1/users/${clerkUserId}`;
+          const clerkResponse = await fetch(clerkApiUrl, {
+            headers: {
+              Authorization: `Bearer ${c.env.CLERK_SECRET_KEY}`,
+            },
+          });
+
+          if (clerkResponse.ok) {
+            const userData = await clerkResponse.json() as {
+              email_addresses?: Array<{ id: string; email_address: string }>;
+              primary_email_address_id?: string;
+            };
+            // Obtener el email primario del usuario
+            email = userData.email_addresses?.find((e) => e.id === userData.primary_email_address_id)?.email_address ||
+                    userData.email_addresses?.[0]?.email_address || '';
+          }
+        } catch (error) {
+          console.error('Error obteniendo usuario de Clerk:', error);
+        }
+
+        // Si aún no hay email, rechazar
+        if (!email) {
+          console.log('No se pudo obtener email del usuario:', clerkUserId);
+          return c.json({
+            error: 'No se pudo obtener el email del usuario',
+          }, 401);
+        }
       }
 
       const db = getDb(c.env);
