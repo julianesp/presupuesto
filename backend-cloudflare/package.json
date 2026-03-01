@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:node": "tsx server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
     "deploy": "wrangler deploy",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply presupuesto-db --local",
@@ -15,8 +18,10 @@
   },
   "dependencies": {
     "@clerk/backend": "^1.15.11",
+    "@hono/node-server": "^1.19.9",
     "@hono/zod-validator": "^0.4.1",
     "@paralleldrive/cuid2": "^2.2.2",
+    "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.14",
     "zod": "^3.23.8"
@@ -24,6 +29,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
     "@libsql/client": "^0.17.0",
+    "@types/node": "^25.3.3",
     "drizzle-kit": "^0.31.9",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2",

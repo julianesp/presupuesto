@@ -22,7 +22,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     // ========== GASTOS ==========
 
     // 1. Apropiación definitiva total
-    const apropiacionResult = await db.all<{ total: number }>(sql`
+    const apropiacionResult = await db.all(sql`
       SELECT COALESCE(SUM(apropiacion_definitiva), 0) as total
       FROM rubros_gastos
       WHERE tenant_id = ${tenantId}
@@ -30,7 +30,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     const apropiacion = (apropiacionResult[0] as any)?.total || 0;
 
     // 2. Total CDP expedidos
-    const cdpResult = await db.all<{ total: number }>(sql`
+    const cdpResult = await db.all(sql`
       SELECT COALESCE(SUM(valor), 0) as total
       FROM cdp
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
@@ -38,7 +38,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     const cdp = (cdpResult[0] as any)?.total || 0;
 
     // 3. Total comprometido (RP)
-    const comprometidoResult = await db.all<{ total: number }>(sql`
+    const comprometidoResult = await db.all(sql`
       SELECT COALESCE(SUM(valor), 0) as total
       FROM rp
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
@@ -46,7 +46,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     const comprometido = (comprometidoResult[0] as any)?.total || 0;
 
     // 4. Total obligaciones
-    const obligadoResult = await db.all<{ total: number }>(sql`
+    const obligadoResult = await db.all(sql`
       SELECT COALESCE(SUM(valor), 0) as total
       FROM obligaciones
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
@@ -54,7 +54,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     const obligado = (obligadoResult[0] as any)?.total || 0;
 
     // 5. Total pagos
-    const pagadoResult = await db.all<{ total: number }>(sql`
+    const pagadoResult = await db.all(sql`
       SELECT COALESCE(SUM(valor), 0) as total
       FROM pagos
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
@@ -68,7 +68,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     // ========== INGRESOS ==========
 
     // 7. Presupuesto de ingresos
-    const pptoIngresosResult = await db.all<{ total: number }>(sql`
+    const pptoIngresosResult = await db.all(sql`
       SELECT COALESCE(SUM(presupuesto_definitivo), 0) as total
       FROM rubros_ingresos
       WHERE tenant_id = ${tenantId}
@@ -76,7 +76,7 @@ app.get('/resumen', clerkAuth, async (c) => {
     const ppto_ingresos = (pptoIngresosResult[0] as any)?.total || 0;
 
     // 8. Total recaudado
-    const recaudadoResult = await db.all<{ total: number }>(sql`
+    const recaudadoResult = await db.all(sql`
       SELECT COALESCE(SUM(valor), 0) as total
       FROM recaudos
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
