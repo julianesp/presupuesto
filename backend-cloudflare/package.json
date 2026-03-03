@@ -16,7 +16,8 @@
     "type-check": "tsc --noEmit",
     "add-user": "tsx scripts/add-user.ts",
     "migrate-old-data": "tsx scripts/migrate-from-old-db.ts",
-    "import-excel": "tsx scripts/import-from-excel.ts"
+    "import-excel": "tsx scripts/import-from-excel.ts",
+    "import-excel:prod": "tsx scripts/import-from-excel.ts --prod"
   },
   "dependencies": {
     "@clerk/backend": "^1.15.11",

@@ -12,17 +12,22 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const EXCEL_DIR = path.join(__dirname, '../../backend/PRESUPUESTOS 2026');
+const EXCEL_DIR = path.join(__dirname, '../PRESUPUESTOS 2026');
 const CATALOGO_FILE = '6.1. CATALOGO PRESUPUESTAL INGRESOS Y GASTOS 2025- PRESUPUESTO IE 2025.xlsx';
 const TENANT_ID = 'tenant_default';
 
-console.log('📊 Importando datos desde archivos Excel...\n');
+// Leer argumentos de línea de comandos
+const args = process.argv.slice(2);
+const isProduction = args.includes('--prod') || args.includes('--production');
+const dbFlag = isProduction ? '--remote' : '--local';
+
+console.log(`📊 Importando datos desde archivos Excel a ${isProduction ? 'PRODUCCIÓN' : 'LOCAL'}...\n`);
 
 // Función para ejecutar comandos SQL en D1
 function executeD1(sql: string): any {
   try {
     const escapedSql = sql.replace(/"/g, '\\"').replace(/\n/g, ' ');
-    const command = `wrangler d1 execute presupuesto-db --local --json --command "${escapedSql}"`;
+    const command = `wrangler d1 execute presupuesto-db ${dbFlag} --json --command "${escapedSql}"`;
     const result = execSync(command, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
     const parsed = JSON.parse(result);
     return parsed[0];
@@ -88,8 +93,13 @@ if (gastosSheet) {
     const r = row as any;
 
     // Intentar diferentes nombres de columnas (pueden variar en el Excel, incluyendo espacios)
-    const codigo = cleanValue(r['CODIGO '] || r['CODIGO'] || r['Codigo'] || r['codigo'] || r['COD'] || r['Cod']);
+    let codigo = cleanValue(r['CODIGO '] || r['CODIGO'] || r['Codigo'] || r['codigo'] || r['COD'] || r['Cod']);
     const cuenta = cleanValue(r['CUENTA '] || r['CUENTA'] || r['Cuenta'] || r['cuenta'] || r['DESCRIPCION'] || r['Descripcion'] || r['descripcion']);
+
+    // Convertir código a string si es número
+    if (typeof codigo === 'number') {
+      codigo = codigo.toString();
+    }
 
     if (!codigo || !cuenta) continue; // Saltar filas vacías
 
@@ -148,8 +158,13 @@ if (ingresosSheet) {
   for (const row of ingresosData) {
     const r = row as any;
 
-    const codigo = cleanValue(r['CODIGO '] || r['CODIGO'] || r['Codigo'] || r['codigo'] || r['COD'] || r['Cod']);
+    let codigo = cleanValue(r['CODIGO '] || r['CODIGO'] || r['Codigo'] || r['codigo'] || r['COD'] || r['Cod']);
     const cuenta = cleanValue(r['CUENTA '] || r['CUENTA'] || r['Cuenta'] || r['cuenta'] || r['DESCRIPCION'] || r['Descripcion'] || r['descripcion']);
+
+    // Convertir código a string si es número
+    if (typeof codigo === 'number') {
+      codigo = codigo.toString();
+    }
 
     if (!codigo || !cuenta) continue;
 

@@ -33,7 +33,10 @@
       "Bash(chmod:*)",
       "Bash(npm run migrate-old-data:*)",
       "Bash(find:*)",
-      "Bash(npm run import-excel:*)"
+      "Bash(npm run import-excel:*)",
+      "Bash(npm run import-excel:prod:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []
