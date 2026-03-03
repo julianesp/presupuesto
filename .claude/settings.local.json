@@ -36,7 +36,9 @@
       "Bash(npm run import-excel:*)",
       "Bash(npm run import-excel:prod:*)",
       "Bash(npm run deploy:*)",
-      "Bash(vercel env:*)"
+      "Bash(vercel env:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
