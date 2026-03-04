@@ -41,7 +41,9 @@
       "Bash(git restore:*)",
       "Bash(vercel link)",
       "Bash(vercel link:*)",
-      "Bash(vercel --prod:*)"
+      "Bash(vercel --prod:*)",
+      "Bash(wrangler deployments:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

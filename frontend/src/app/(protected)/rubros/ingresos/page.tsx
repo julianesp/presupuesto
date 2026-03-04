@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead,
   TableHeader, TableRow,
@@ -86,6 +87,9 @@ export default function RubrosIngresosPage() {
   const [delLoading, setDelLoading] = useState(false);
   const { toast } = useToast();
 
+  // Control de permisos
+  const permissions = usePermissions("rubros-ingresos");
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -130,7 +134,7 @@ export default function RubrosIngresosPage() {
       <PageHeader
         title="Rubros de Ingresos"
         description="Árbol presupuestal de ingresos"
-        action={{ label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } }}
+        action={permissions.canCreate ? { label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } } : undefined}
       />
       {loading && <LoadingTable />}
       {error && <ErrorAlert message={error} onRetry={load} />}
@@ -169,12 +173,16 @@ export default function RubrosIngresosPage() {
                     <TableCell>
                       {isLeaf && (
                         <div className="flex gap-1 justify-end">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(r); setFormOpen(true); }}>
-                            <PencilIcon className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleting(r)}>
-                            <Trash2Icon className="h-3.5 w-3.5" />
-                          </Button>
+                          {permissions.canUpdate && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(r); setFormOpen(true); }}>
+                              <PencilIcon className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {permissions.canDelete && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleting(r)}>
+                              <Trash2Icon className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       )}
                     </TableCell>

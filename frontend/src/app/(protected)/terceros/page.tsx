@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { EmptyState } from "@/components/common/EmptyState";
 import { SearchInput } from "@/components/common/SearchInput";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -158,6 +159,7 @@ export default function TercerosPage() {
   const [deleteTarget, setDeleteTarget] = useState<Tercero | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions("terceros");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -218,7 +220,7 @@ export default function TercerosPage() {
     <div>
       <PageHeader
         title="Terceros"
-        action={{ label: "Nuevo Tercero", onClick: openNew }}
+        action={permissions.canCreate ? { label: "Nuevo Tercero", onClick: openNew } : undefined}
       />
       <div className="mb-4 max-w-sm">
         <SearchInput value={buscar} onChange={setBuscar} placeholder="Buscar por NIT o nombre..." />
@@ -247,24 +249,28 @@ export default function TercerosPage() {
                   <TableCell className="text-sm">{t.email}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-slate-500 hover:text-blue-600"
-                        onClick={() => openEdit(t)}
-                        title="Editar"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-slate-500 hover:text-red-600"
-                        onClick={() => setDeleteTarget(t)}
-                        title="Eliminar"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {permissions.canUpdate && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-slate-500 hover:text-blue-600"
+                          onClick={() => openEdit(t)}
+                          title="Editar"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {permissions.canDelete && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-slate-500 hover:text-red-600"
+                          onClick={() => setDeleteTarget(t)}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

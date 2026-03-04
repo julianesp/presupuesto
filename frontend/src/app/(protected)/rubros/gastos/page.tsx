@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { RubrosGastosTree } from "@/components/rubros/RubrosTree";
 import { RubroGastoForm } from "@/components/rubros/RubroGastoForm";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function RubrosGastosPage() {
   const [rubros, setRubros] = useState<RubroGasto[]>([]);
@@ -20,6 +21,9 @@ export default function RubrosGastosPage() {
   const [deleting, setDeleting] = useState<RubroGasto | null>(null);
   const [delLoading, setDelLoading] = useState(false);
   const { toast } = useToast();
+
+  // Control de permisos
+  const permissions = usePermissions("rubros-gastos");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,7 +78,7 @@ export default function RubrosGastosPage() {
       <PageHeader
         title="Rubros de Gastos"
         description="Árbol presupuestal de gastos"
-        action={{ label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } }}
+        action={permissions.canCreate ? { label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } } : undefined}
       />
       {loading && <LoadingTable />}
       {error && <ErrorAlert message={error} onRetry={load} />}
@@ -83,6 +87,8 @@ export default function RubrosGastosPage() {
         <RubrosGastosTree
           rubros={rubros}
           onEdit={(r) => { setEditing(r); setFormOpen(true); }}
+          canEdit={permissions.canUpdate}
+          canDelete={permissions.canDelete}
           onDelete={setDeleting}
         />
       )}

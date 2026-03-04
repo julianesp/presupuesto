@@ -18,6 +18,7 @@ import { CurrencyInput } from "@/components/common/CurrencyInput";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils/dates";
 import { formatCOP } from "@/lib/utils/currency";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -239,6 +240,7 @@ export default function PagosPage() {
   const [anulLoading, setAnulLoading] = useState(false);
   const [editando, setEditando] = useState<Pago | null>(null);
   const { toast } = useToast();
+  const permissions = usePermissions("pagos");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -296,7 +298,7 @@ export default function PagosPage() {
     <div>
       <PageHeader
         title="Pagos"
-        action={{ label: "Nuevo Pago", onClick: () => setFormOpen(true) }}
+        action={permissions.canCreate ? { label: "Nuevo Pago", onClick: () => setFormOpen(true) } : undefined}
         onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4"><FiltroEstado value={filtro} onChange={setFiltro} /></div>
@@ -332,12 +334,12 @@ export default function PagosPage() {
                           <FileTextIcon className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
-                      {p.estado === "Activo" && (
+                      {p.estado === "Activo" && permissions.canUpdate && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(p)} title="Editar">
                           <PencilIcon className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {p.estado === "Activo" && (
+                      {p.estado === "Activo" && permissions.canAnular && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(p)} title="Anular">
                           <BanIcon className="h-3.5 w-3.5" />
                         </Button>

@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { LoadingTable } from "@/components/common/LoadingTable";
 import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { EmptyState } from "@/components/common/EmptyState";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table,
   TableBody,
@@ -131,6 +132,7 @@ export default function UsuariosPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const permissions = usePermissions("usuarios");
 
   const [items, setItems] = useState<UserInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -197,7 +199,7 @@ export default function UsuariosPage() {
       <PageHeader
         title="Usuarios"
         description="Gestión de usuarios de la institución"
-        action={{ label: "Nuevo usuario", onClick: () => setCreating(true) }}
+        action={permissions.canCreate ? { label: "Nuevo usuario", onClick: () => setCreating(true) } : undefined}
       />
 
       {loading && <LoadingTable />}
@@ -239,14 +241,16 @@ export default function UsuariosPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditing(u)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      {u.id !== user.id && (
+                      {permissions.canUpdate && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditing(u)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {u.id !== user.id && permissions.canDelete && (
                         <Button
                           variant="ghost"
                           size="sm"

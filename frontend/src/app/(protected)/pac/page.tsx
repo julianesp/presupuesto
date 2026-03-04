@@ -8,6 +8,7 @@ import { CurrencyDisplay } from "@/components/common/CurrencyDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { mesNombre } from "@/lib/utils/dates";
 import { formatCOP, parseCOP } from "@/lib/utils/currency";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -43,6 +44,7 @@ export default function PacPage() {
   const [distribuyendo, setDistribuyendo] = useState<string | null>(null);
   const [distribuyendoTodos, setDistribuyendoTodos] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions("pac");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -118,7 +120,7 @@ export default function PacPage() {
           <h1 className="text-2xl font-semibold text-slate-900">Plan Anual de Caja (PAC)</h1>
           <p className="text-sm text-slate-500 mt-1">Programación mensual por rubro de gasto</p>
         </div>
-        {rubros.length > 0 && (
+        {rubros.length > 0 && permissions.canUpdate && (
           <Button
             onClick={handleDistribuirTodos}
             disabled={distribuyendoTodos}
@@ -206,6 +208,7 @@ export default function PacPage() {
                           handleCellChange(r.codigo, i, num > 0 ? formatCOP(num) : "$ 0");
                         }}
                         className="h-7 text-right text-xs tabular-nums w-24"
+                        disabled={!permissions.canUpdate}
                       />
                     </TableCell>
                   ))}
@@ -216,31 +219,33 @@ export default function PacPage() {
                     <PacProgress total_pac={r.total_pac} apropiacion={r.apropiacion_definitiva} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleDistribuir(r)}
-                        disabled={distribuyendo === r.codigo}
-                        title="Distribuir uniformemente"
-                      >
-                        {distribuyendo === r.codigo
-                          ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          : <Wand2 className="h-3.5 w-3.5" />
-                        }
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleSave(r)}
-                        disabled={saving === r.codigo}
-                        title="Guardar PAC"
-                      >
-                        <SaveIcon className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    {permissions.canUpdate && (
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleDistribuir(r)}
+                          disabled={distribuyendo === r.codigo}
+                          title="Distribuir uniformemente"
+                        >
+                          {distribuyendo === r.codigo
+                            ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            : <Wand2 className="h-3.5 w-3.5" />
+                          }
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleSave(r)}
+                          disabled={saving === r.codigo}
+                          title="Guardar PAC"
+                        >
+                          <SaveIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

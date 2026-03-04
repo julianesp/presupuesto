@@ -17,9 +17,11 @@ interface Props {
   rubros: RubroGasto[];
   onEdit: (r: RubroGasto) => void;
   onDelete: (r: RubroGasto) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function RubrosGastosTree({ rubros, onEdit, onDelete }: Props) {
+export function RubrosGastosTree({ rubros, onEdit, onDelete, canEdit = true, canDelete = true }: Props) {
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200">
       <Table>
@@ -76,22 +78,26 @@ export function RubrosGastosTree({ rubros, onEdit, onDelete }: Props) {
                 <TableCell>
                   {isLeaf && (
                     <div className="flex gap-1 justify-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => onEdit(r)}
-                      >
-                        <PencilIcon className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-red-500 hover:text-red-600"
-                        onClick={() => onDelete(r)}
-                      >
-                        <Trash2Icon className="h-3.5 w-3.5" />
-                      </Button>
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => onEdit(r)}
+                        >
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500 hover:text-red-600"
+                          onClick={() => onDelete(r)}
+                        >
+                          <Trash2Icon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </TableCell>

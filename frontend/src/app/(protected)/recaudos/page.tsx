@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { CurrencyInput } from "@/components/common/CurrencyInput";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils/dates";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -209,6 +210,7 @@ export default function RecaudosPage() {
   const [anulLoading, setAnulLoading] = useState(false);
   const [editando, setEditando] = useState<Recaudo | null>(null);
   const { toast } = useToast();
+  const permissions = usePermissions("recaudos");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -266,7 +268,7 @@ export default function RecaudosPage() {
     <div>
       <PageHeader
         title="Recaudos"
-        action={{ label: "Nuevo Recaudo", onClick: () => setFormOpen(true) }}
+        action={permissions.canCreate ? { label: "Nuevo Recaudo", onClick: () => setFormOpen(true) } : undefined}
         onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4"><FiltroEstado value={filtro} onChange={setFiltro} /></div>
@@ -300,12 +302,12 @@ export default function RecaudosPage() {
                           <FileTextIcon className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
-                      {r.estado === "Activo" && (
+                      {r.estado === "Activo" && permissions.canUpdate && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => setEditando(r)} title="Editar">
                           <PencilIcon className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {r.estado === "Activo" && (
+                      {r.estado === "Activo" && permissions.canAnular && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(r)} title="Anular">
                           <BanIcon className="h-3.5 w-3.5" />
                         </Button>

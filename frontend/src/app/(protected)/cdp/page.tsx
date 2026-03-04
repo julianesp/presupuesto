@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { CurrencyInput } from "@/components/common/CurrencyInput";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils/dates";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -245,6 +246,9 @@ export default function CdpPage() {
   const [editando, setEditando] = useState<CDP | null>(null);
   const { toast } = useToast();
 
+  // Control de permisos
+  const permissions = usePermissions("cdp");
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -307,7 +311,7 @@ export default function CdpPage() {
     <div>
       <PageHeader
         title="Certificados de Disponibilidad (CDP)"
-        action={{ label: "Nuevo CDP", onClick: () => setFormOpen(true) }}
+        action={permissions.canCreate ? { label: "Nuevo CDP", onClick: () => setFormOpen(true) } : undefined}
         onPrint={() => window.print()}
       />
       <div className="flex gap-3 mb-4">
@@ -351,7 +355,7 @@ export default function CdpPage() {
                           <FileTextIcon className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
-                      {c.estado === "Activo" && (
+                      {c.estado === "Activo" && permissions.canUpdate && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -362,7 +366,7 @@ export default function CdpPage() {
                           <PencilIcon className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {c.estado === "Activo" && (
+                      {c.estado === "Activo" && permissions.canAnular && (
                         <Button
                           variant="ghost"
                           size="icon"

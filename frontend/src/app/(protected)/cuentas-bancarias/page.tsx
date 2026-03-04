@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { EstadoBadge } from "@/components/common/EstadoBadge";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -90,6 +91,7 @@ export default function CuentasBancariasPage() {
   const [deleting, setDeleting] = useState<CuentaBancaria | null>(null);
   const [delLoading, setDelLoading] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions("cuentas-bancarias");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -128,7 +130,7 @@ export default function CuentasBancariasPage() {
     <div>
       <PageHeader
         title="Cuentas Bancarias"
-        action={{ label: "Nueva Cuenta", onClick: () => { setEditing(null); setFormOpen(true); } }}
+        action={permissions.canCreate ? { label: "Nueva Cuenta", onClick: () => { setEditing(null); setFormOpen(true); } } : undefined}
       />
       {loading && <LoadingTable />}
       {error && <ErrorAlert message={error} onRetry={load} />}
@@ -153,12 +155,16 @@ export default function CuentasBancariasPage() {
                   <TableCell><EstadoBadge estado={c.estado} /></TableCell>
                   <TableCell>
                     <div className="flex gap-1 justify-end">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(c); setFormOpen(true); }}>
-                        <PencilIcon className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleting(c)}>
-                        <Trash2Icon className="h-3.5 w-3.5" />
-                      </Button>
+                      {permissions.canUpdate && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditing(c); setFormOpen(true); }}>
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {permissions.canDelete && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setDeleting(c)}>
+                          <Trash2Icon className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils/dates";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePermissions } from "@/hooks/usePermissions";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -146,6 +147,7 @@ export default function ModificacionesPage() {
   const [anulando, setAnulando] = useState<Modificacion | null>(null);
   const [anulLoading, setAnulLoading] = useState(false);
   const { toast } = useToast();
+  const permissions = usePermissions("modificaciones");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -217,7 +219,7 @@ export default function ModificacionesPage() {
                 <TableCell className="text-right"><CurrencyDisplay value={m.valor} /></TableCell>
                 <TableCell><EstadoBadge estado={m.estado} /></TableCell>
                 <TableCell>
-                  {m.estado === "Activo" && (
+                  {m.estado === "Activo" && permissions.canAnular && (
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => setAnulando(m)}>
                       <BanIcon className="h-3.5 w-3.5" />
                     </Button>
@@ -246,13 +248,15 @@ export default function ModificacionesPage() {
               <TabsTrigger value="aplazamiento">Aplazamientos</TabsTrigger>
               <TabsTrigger value="desplazamiento">Desplazamientos</TabsTrigger>
             </TabsList>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={() => setFormTipo("adicion")}><PlusIcon className="h-4 w-4 mr-1" />Adición</Button>
-              <Button size="sm" variant="outline" onClick={() => setFormTipo("reduccion")}><PlusIcon className="h-4 w-4 mr-1" />Reducción</Button>
-              <Button size="sm" variant="outline" onClick={() => setFormTipo("credito")}><PlusIcon className="h-4 w-4 mr-1" />Crédito</Button>
-              <Button size="sm" variant="outline" onClick={() => setFormTipo("aplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Aplazamiento</Button>
-              <Button size="sm" variant="outline" onClick={() => setFormTipo("desplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Desplazamiento</Button>
-            </div>
+            {permissions.canCreate && (
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => setFormTipo("adicion")}><PlusIcon className="h-4 w-4 mr-1" />Adición</Button>
+                <Button size="sm" variant="outline" onClick={() => setFormTipo("reduccion")}><PlusIcon className="h-4 w-4 mr-1" />Reducción</Button>
+                <Button size="sm" variant="outline" onClick={() => setFormTipo("credito")}><PlusIcon className="h-4 w-4 mr-1" />Crédito</Button>
+                <Button size="sm" variant="outline" onClick={() => setFormTipo("aplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Aplazamiento</Button>
+                <Button size="sm" variant="outline" onClick={() => setFormTipo("desplazamiento")}><PlusIcon className="h-4 w-4 mr-1" />Desplazamiento</Button>
+              </div>
+            )}
           </div>
           <TabsContent value="adicion"><TablaModifs items={porTipo("ADICION")} /></TabsContent>
           <TabsContent value="reduccion"><TablaModifs items={porTipo("REDUCCION")} /></TabsContent>
