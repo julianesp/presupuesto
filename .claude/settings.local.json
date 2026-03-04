@@ -38,7 +38,10 @@
       "Bash(npm run deploy:*)",
       "Bash(vercel env:*)",
       "Bash(git reset:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(vercel link)",
+      "Bash(vercel link:*)",
+      "Bash(vercel --prod:*)"
     ],
     "deny": [],
     "ask": []

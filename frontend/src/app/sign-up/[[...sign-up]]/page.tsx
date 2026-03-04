@@ -13,6 +13,8 @@ export default function SignUpPage() {
           </p>
         </div>
         <SignUp
+          afterSignInUrl="/dashboard"
+          afterSignUpUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "mx-auto",
