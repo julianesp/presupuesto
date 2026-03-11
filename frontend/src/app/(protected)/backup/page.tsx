@@ -9,8 +9,8 @@ import { DownloadIcon, UploadCloudIcon, ShieldCheckIcon, AlertTriangleIcon, Chec
 
 const LABELS: Record<string, string> = {
   config: "Configuración",
-  rubros_gastos: "Rubros de Gastos",
-  rubros_ingresos: "Rubros de Ingresos",
+  rubros_gastos: "Plan de Gastos",
+  rubros_ingresos: "Plan de Ingresos",
   terceros: "Terceros",
   cuentas_bancarias: "Cuentas Bancarias",
   cdp: "CDP",

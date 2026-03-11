@@ -1,11 +1,30 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-function getAuthHeaders(): Record<string, string> {
+async function getAuthHeaders(): Promise<Record<string, string>> {
   const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
-  if (isDev) return { "X-Dev-Email": "admin@localhost" };
-  if (typeof document !== "undefined") {
-    const match = document.cookie.match(/CF_Authorization=([^;]+)/);
-    if (match) return { Authorization: `Bearer ${match[1]}` };
+  if (isDev) {
+    return { "X-Dev-Email": "admin@localhost" };
+  }
+  // En producción: obtener token directamente de Clerk
+  if (typeof window !== "undefined") {
+    try {
+      // Intentar obtener de window.Clerk primero (más confiable)
+      const clerk = (window as any).Clerk;
+      if (clerk?.session) {
+        const freshToken = await clerk.session.getToken();
+        if (freshToken) {
+          return { Authorization: `Bearer ${freshToken}` };
+        }
+      }
+
+      // Fallback: obtener de sessionStorage si Clerk no está disponible
+      const token = sessionStorage.getItem("clerk_token");
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
+      }
+    } catch (error) {
+      console.error("Error al obtener token de Clerk:", error);
+    }
   }
   return {};
 }
@@ -17,9 +36,11 @@ async function uploadFile<T>(path: string, file: File, params?: Record<string, s
   const body = new FormData();
   body.append("file", file);
 
+  const authHeaders = await getAuthHeaders();
+
   const res = await fetch(url.toString(), {
     method: "POST",
-    headers: getAuthHeaders(),
+    headers: authHeaders,
     body,
   });
 
@@ -77,8 +98,9 @@ export const importacionApi = {
     uploadFile<ResultadoImportacion>("/api/importacion/csv/terceros", file, { separador }),
 
   async descargarPlantillaExcel(): Promise<void> {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BASE_URL}/api/importacion/plantillas/excel`, {
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     if (!res.ok) throw new Error(`Error ${res.status}`);
     const blob = await res.blob();
@@ -86,9 +108,10 @@ export const importacionApi = {
   },
 
   async sincronizarPadres(): Promise<{ ok: boolean; mensaje: string }> {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BASE_URL}/api/importacion/sincronizar-padres`, {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: authHeaders,
     });
     if (!res.ok) throw new Error(`Error ${res.status}`);
     return res.json();

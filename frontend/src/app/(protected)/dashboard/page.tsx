@@ -47,6 +47,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardResumen | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [limpiando, setLimpiando] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -59,6 +60,56 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function limpiarDatos() {
+    if (!confirm('¿Está seguro de eliminar TODOS los datos presupuestales? Esta acción NO se puede deshacer.')) {
+      return;
+    }
+
+    setLimpiando(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/importacion/limpiar-datos`, {
+        method: 'DELETE',
+        headers: await getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al limpiar datos');
+      }
+
+      alert('Datos eliminados correctamente');
+      load(); // Recargar dashboard
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Error al limpiar datos');
+    } finally {
+      setLimpiando(false);
+    }
+  }
+
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    const isDev = process.env.NEXT_PUBLIC_DEV_MODE === "true";
+    if (isDev) {
+      return { "X-Dev-Email": "admin@localhost" };
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const clerk = (window as any).Clerk;
+        if (clerk?.session) {
+          const freshToken = await clerk.session.getToken();
+          if (freshToken) {
+            return { Authorization: `Bearer ${freshToken}` };
+          }
+        }
+        const token = sessionStorage.getItem("clerk_token");
+        if (token) {
+          return { Authorization: `Bearer ${token}` };
+        }
+      } catch (error) {
+        console.error("Error al obtener token de Clerk:", error);
+      }
+    }
+    return {};
   }
 
   useEffect(() => {
@@ -74,7 +125,16 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+        <button
+          onClick={limpiarDatos}
+          disabled={limpiando}
+          className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {limpiando ? 'Limpiando...' : '🗑️ Limpiar Todos los Datos'}
+        </button>
+      </div>
 
       {/* KPIs Gastos */}
       <div>

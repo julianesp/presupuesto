@@ -25,6 +25,8 @@ import adminRoutes from './routes/admin';
 import sifseRoutes from './routes/sifse';
 import dashboardRoutes from './routes/dashboard';
 import informesRoutes from './routes/informes';
+import importacionRoutes from './routes/importacion';
+import modificacionesRoutes from './routes/modificaciones';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -73,6 +75,8 @@ app.route('/api/admin', adminRoutes);
 app.route('/api/sifse', sifseRoutes);
 app.route('/api/dashboard', dashboardRoutes);
 app.route('/api/informes', informesRoutes);
+app.route('/api/importacion', importacionRoutes);
+app.route('/api/modificaciones', modificacionesRoutes);
 app.route('/api/rubros-ingresos', rubrosIngresosRoutes);
 app.route('/api/rubros-gastos', rubrosGastosRoutes);
 app.route('/api/terceros', tercerosRoutes);

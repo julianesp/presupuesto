@@ -160,7 +160,7 @@ export default function PacPage() {
           <p className="text-slate-500">No hay rubros de gasto registrados.</p>
           <p className="mt-1 text-sm text-slate-400">
             Primero crea rubros de gasto en{" "}
-            <a href="/rubros/gastos" className="text-blue-600 hover:underline">Rubros de Gastos</a>{" "}
+            <a href="/rubros/gastos" className="text-blue-600 hover:underline">Plan de Gastos</a>{" "}
             para configurar el PAC.
           </p>
         </div>

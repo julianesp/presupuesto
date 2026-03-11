@@ -30,8 +30,8 @@ const navGroups = [
     label: "PRESUPUESTAL",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/rubros/gastos", label: "Rubros Gastos", icon: FolderTree },
-      { href: "/rubros/ingresos", label: "Rubros Ingresos", icon: FolderTree },
+      { href: "/rubros/gastos", label: "Plan de Gastos", icon: FolderTree },
+      { href: "/rubros/ingresos", label: "Plan de Ingresos", icon: FolderTree },
     ],
   },
   {

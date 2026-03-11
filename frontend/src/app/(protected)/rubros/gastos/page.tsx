@@ -76,7 +76,7 @@ export default function RubrosGastosPage() {
   return (
     <div>
       <PageHeader
-        title="Rubros de Gastos"
+        title="Plan de Gastos"
         description="Árbol presupuestal de gastos"
         action={permissions.canCreate ? { label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } } : undefined}
       />

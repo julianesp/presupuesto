@@ -21,11 +21,12 @@ app.get('/resumen', clerkAuth, async (c) => {
   try {
     // ========== GASTOS ==========
 
-    // 1. Apropiación definitiva total
+    // 1. Apropiación definitiva total (SOLO RUBROS HOJA para evitar doble conteo)
     const apropiacionResult = await db.all(sql`
       SELECT COALESCE(SUM(apropiacion_definitiva), 0) as total
       FROM rubros_gastos
       WHERE tenant_id = ${tenantId}
+        AND es_hoja = 1
     `);
     const apropiacion = (apropiacionResult[0] as any)?.total || 0;
 
@@ -67,11 +68,12 @@ app.get('/resumen', clerkAuth, async (c) => {
 
     // ========== INGRESOS ==========
 
-    // 7. Presupuesto de ingresos
+    // 7. Presupuesto de ingresos (SOLO RUBROS HOJA para evitar doble conteo)
     const pptoIngresosResult = await db.all(sql`
       SELECT COALESCE(SUM(presupuesto_definitivo), 0) as total
       FROM rubros_ingresos
       WHERE tenant_id = ${tenantId}
+        AND es_hoja = 1
     `);
     const ppto_ingresos = (pptoIngresosResult[0] as any)?.total || 0;
 

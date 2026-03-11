@@ -132,7 +132,7 @@ export default function RubrosIngresosPage() {
   return (
     <div>
       <PageHeader
-        title="Rubros de Ingresos"
+        title="Plan de Ingresos"
         description="Árbol presupuestal de ingresos"
         action={permissions.canCreate ? { label: "Nuevo Rubro", onClick: () => { setEditing(null); setFormOpen(true); } } : undefined}
       />

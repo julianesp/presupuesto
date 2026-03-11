@@ -36,8 +36,8 @@ function ResultadoPanel({ resultado }: { resultado: ResultadoImportacion }) {
 
       {esExcel ? (
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <Stat label="Rubros de Gastos" value={resultado.rubros_gastos ?? 0} />
-          <Stat label="Rubros de Ingresos" value={resultado.rubros_ingresos ?? 0} />
+          <Stat label="Plan de Gastos" value={resultado.rubros_gastos ?? 0} />
+          <Stat label="Plan de Ingresos" value={resultado.rubros_ingresos ?? 0} />
           <Stat label="Total Gastos" value={formatCOP(resultado.total_gastos ?? 0)} />
           <Stat label="Total Ingresos" value={formatCOP(resultado.total_ingresos ?? 0)} />
           {resultado.diferencia !== undefined && (
@@ -363,7 +363,7 @@ export default function ImportacionPage() {
           <ol className="mt-1 list-decimal list-inside space-y-0.5 text-blue-700 text-xs">
             <li>Haz clic en <strong>Plantilla</strong> en la tarjeta correspondiente para descargar el archivo de ejemplo</li>
             <li>Diligencia la plantilla con los datos reales (respeta las columnas)</li>
-            <li>Carga primero <strong>Rubros de Gastos</strong> y <strong>Rubros de Ingresos</strong> (o el Excel completo con ambos)</li>
+            <li>Carga primero <strong>Plan de Gastos</strong> y <strong>Plan de Ingresos</strong> (o el Excel completo con ambos)</li>
             <li>Luego carga <strong>Terceros</strong></li>
             <li>Con los rubros cargados ya puedes registrar CDP, RP, Obligaciones, Pagos, Reconocimientos y Recaudos</li>
           </ol>
@@ -401,7 +401,7 @@ export default function ImportacionPage() {
         {/* CSV Rubros Gastos */}
         <ImportCard
           icon={<FileText className="h-5 w-5" />}
-          title="Rubros de Gastos (CSV / TXT)"
+          title="Plan de Gastos (CSV / TXT)"
           description="Un rubro por línea: código, nombre de cuenta y apropiación inicial"
           accept=".csv,.txt"
           hint="CSV o TXT — codificación UTF-8 o Latin-1"
@@ -421,7 +421,7 @@ export default function ImportacionPage() {
         {/* CSV Rubros Ingresos */}
         <ImportCard
           icon={<FileText className="h-5 w-5" />}
-          title="Rubros de Ingresos (CSV / TXT)"
+          title="Plan de Ingresos (CSV / TXT)"
           description="Un rubro por línea: código, nombre de cuenta y presupuesto inicial"
           accept=".csv,.txt"
           hint="CSV o TXT — codificación UTF-8 o Latin-1"

@@ -18,7 +18,7 @@ export function getDb(env: Env) {
 
   // Cloudflare Workers con D1
   if (env.DB) {
-    return drizzleD1(env.DB, { schema });
+    return drizzleD1(env.DB, { schema, casing: 'camelCase' } as any);
   }
 
   // Node.js con libSQL (usando DATABASE_URL del entorno)
@@ -28,7 +28,7 @@ export function getDb(env: Env) {
     url: databaseUrl,
   });
 
-  cachedDb = drizzleLibsql(client, { schema });
+  cachedDb = drizzleLibsql(client, { schema, casing: 'camelCase' } as any);
   return cachedDb;
 }
 

@@ -43,7 +43,13 @@
       "Bash(vercel link:*)",
       "Bash(vercel --prod:*)",
       "Bash(wrangler deployments:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(head:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(xargs basename:*)",
+      "Bash(npx wrangler d1 execute:*)"
     ],
     "deny": [],
     "ask": []
