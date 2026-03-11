@@ -276,116 +276,155 @@ export async function importarCatalogoExcel(
 
 /**
  * Sincroniza valores de rubros padre sumando SOLO sus hijos directos
- * IMPORTANTE: No suma nietos ni otros descendientes, solo hijos inmediatos
+ * IMPORTANTE: Ejecuta múltiples pasadas para propagar valores hacia arriba en la jerarquía
  */
 async function sincronizarRubrosPadre(db: D1Database, tenantId: string): Promise<void> {
-  // Obtener todos los rubros de gastos ordenados por profundidad (descendente)
-  // Esto asegura que procesamos primero los niveles más profundos
-  const gastosResult = await db.prepare(`
-    SELECT codigo, cuenta, es_hoja,
-           apropiacion_inicial, adiciones, reducciones, creditos, contracreditos
-    FROM rubros_gastos
-    WHERE tenant_id = ?
-    ORDER BY LENGTH(codigo) - LENGTH(REPLACE(codigo, '.', '')) DESC, codigo
-  `).bind(tenantId).all();
+  // Ejecutar sincronización en ciclos hasta que todos los niveles estén actualizados
+  // El número máximo de niveles en una jerarquía presupuestal típica es ~10
+  const maxIteraciones = 15;
 
-  const rubrosGastos = gastosResult.results || [];
+  for (let iteracion = 0; iteracion < maxIteraciones; iteracion++) {
+    // Recargar datos en cada iteración para tener valores actualizados
+    const gastosResult = await db.prepare(`
+      SELECT codigo, cuenta, es_hoja,
+             apropiacion_inicial, adiciones, reducciones, creditos, contracreditos
+      FROM rubros_gastos
+      WHERE tenant_id = ?
+      ORDER BY LENGTH(codigo) - LENGTH(REPLACE(codigo, '.', '')) DESC, codigo
+    `).bind(tenantId).all();
 
-  // Procesar cada rubro padre (de más profundo a más superficial)
-  for (const rubro of rubrosGastos) {
-    if (rubro.es_hoja === 0) {
-      const codigoPadre = rubro.codigo as string;
+    const rubrosGastos = gastosResult.results || [];
+    let huboActualizaciones = false;
 
-      // Obtener SOLO hijos directos (un nivel más profundo)
-      const hijosDirectos = rubrosGastos.filter(r => {
-        const codigo = r.codigo as string;
-        if (codigo === codigoPadre) return false;
+    // Procesar cada rubro padre (de más profundo a más superficial)
+    for (const rubro of rubrosGastos) {
+      if (rubro.es_hoja === 0) {
+        const codigoPadre = rubro.codigo as string;
 
-        // Verificar que sea hijo directo: debe empezar con codigoPadre + '.'
-        // y no tener más puntos después
-        if (!codigo.startsWith(codigoPadre + '.')) return false;
+        // Obtener SOLO hijos directos (un nivel más profundo)
+        const hijosDirectos = rubrosGastos.filter(r => {
+          const codigo = r.codigo as string;
+          if (codigo === codigoPadre) return false;
 
-        const sufijo = codigo.substring(codigoPadre.length + 1);
-        return !sufijo.includes('.'); // No tiene más niveles = hijo directo
-      });
+          // Verificar que sea hijo directo: debe empezar con codigoPadre + '.'
+          // y no tener más puntos después
+          if (!codigo.startsWith(codigoPadre + '.')) return false;
 
-      // Sumar valores de hijos directos
-      let apropIni = 0;
-      let adiciones = 0;
-      let reducciones = 0;
-      let creditos = 0;
-      let contracreditos = 0;
+          const sufijo = codigo.substring(codigoPadre.length + 1);
+          return !sufijo.includes('.'); // No tiene más niveles = hijo directo
+        });
 
-      for (const hijo of hijosDirectos) {
-        apropIni += Number(hijo.apropiacion_inicial) || 0;
-        adiciones += Number(hijo.adiciones) || 0;
-        reducciones += Number(hijo.reducciones) || 0;
-        creditos += Number(hijo.creditos) || 0;
-        contracreditos += Number(hijo.contracreditos) || 0;
+        // Sumar valores de hijos directos
+        let apropIni = 0;
+        let adiciones = 0;
+        let reducciones = 0;
+        let creditos = 0;
+        let contracreditos = 0;
+
+        for (const hijo of hijosDirectos) {
+          apropIni += Number(hijo.apropiacion_inicial) || 0;
+          adiciones += Number(hijo.adiciones) || 0;
+          reducciones += Number(hijo.reducciones) || 0;
+          creditos += Number(hijo.creditos) || 0;
+          contracreditos += Number(hijo.contracreditos) || 0;
+        }
+
+        const apropDef = apropIni + adiciones - reducciones + creditos - contracreditos;
+
+        // Solo actualizar si los valores cambiaron
+        if (
+          Math.abs(Number(rubro.apropiacion_inicial) - apropIni) > 0.01 ||
+          Math.abs(Number(rubro.adiciones) - adiciones) > 0.01 ||
+          Math.abs(Number(rubro.reducciones) - reducciones) > 0.01 ||
+          Math.abs(Number(rubro.creditos) - creditos) > 0.01 ||
+          Math.abs(Number(rubro.contracreditos) - contracreditos) > 0.01
+        ) {
+          await db.prepare(`
+            UPDATE rubros_gastos
+            SET apropiacion_inicial = ?,
+                adiciones = ?,
+                reducciones = ?,
+                creditos = ?,
+                contracreditos = ?,
+                apropiacion_definitiva = ?
+            WHERE tenant_id = ? AND codigo = ?
+          `).bind(apropIni, adiciones, reducciones, creditos, contracreditos, apropDef, tenantId, codigoPadre).run();
+
+          huboActualizaciones = true;
+        }
       }
+    }
 
-      const apropDef = apropIni + adiciones - reducciones + creditos - contracreditos;
-
-      await db.prepare(`
-        UPDATE rubros_gastos
-        SET apropiacion_inicial = ?,
-            adiciones = ?,
-            reducciones = ?,
-            creditos = ?,
-            contracreditos = ?,
-            apropiacion_definitiva = ?
-        WHERE tenant_id = ? AND codigo = ?
-      `).bind(apropIni, adiciones, reducciones, creditos, contracreditos, apropDef, tenantId, codigoPadre).run();
+    // Si no hubo actualizaciones en esta iteración, ya terminamos
+    if (!huboActualizaciones) {
+      break;
     }
   }
 
-  // Sincronizar ingresos con la misma lógica
-  const ingresosResult = await db.prepare(`
-    SELECT codigo, cuenta, es_hoja,
-           presupuesto_inicial, adiciones, reducciones
-    FROM rubros_ingresos
-    WHERE tenant_id = ?
-    ORDER BY LENGTH(codigo) - LENGTH(REPLACE(codigo, '.', '')) DESC, codigo
-  `).bind(tenantId).all();
+  // Sincronizar ingresos con la misma lógica iterativa
+  for (let iteracion = 0; iteracion < maxIteraciones; iteracion++) {
+    const ingresosResult = await db.prepare(`
+      SELECT codigo, cuenta, es_hoja,
+             presupuesto_inicial, adiciones, reducciones
+      FROM rubros_ingresos
+      WHERE tenant_id = ?
+      ORDER BY LENGTH(codigo) - LENGTH(REPLACE(codigo, '.', '')) DESC, codigo
+    `).bind(tenantId).all();
 
-  const rubrosIngresos = ingresosResult.results || [];
+    const rubrosIngresos = ingresosResult.results || [];
+    let huboActualizaciones = false;
 
-  for (const rubro of rubrosIngresos) {
-    if (rubro.es_hoja === 0) {
-      const codigoPadre = rubro.codigo as string;
+    for (const rubro of rubrosIngresos) {
+      if (rubro.es_hoja === 0) {
+        const codigoPadre = rubro.codigo as string;
 
-      // Obtener SOLO hijos directos
-      const hijosDirectos = rubrosIngresos.filter(r => {
-        const codigo = r.codigo as string;
-        if (codigo === codigoPadre) return false;
+        // Obtener SOLO hijos directos
+        const hijosDirectos = rubrosIngresos.filter(r => {
+          const codigo = r.codigo as string;
+          if (codigo === codigoPadre) return false;
 
-        if (!codigo.startsWith(codigoPadre + '.')) return false;
+          if (!codigo.startsWith(codigoPadre + '.')) return false;
 
-        const sufijo = codigo.substring(codigoPadre.length + 1);
-        return !sufijo.includes('.');
-      });
+          const sufijo = codigo.substring(codigoPadre.length + 1);
+          return !sufijo.includes('.');
+        });
 
-      // Sumar valores de hijos directos
-      let pptoIni = 0;
-      let adiciones = 0;
-      let reducciones = 0;
+        // Sumar valores de hijos directos
+        let pptoIni = 0;
+        let adiciones = 0;
+        let reducciones = 0;
 
-      for (const hijo of hijosDirectos) {
-        pptoIni += Number(hijo.presupuesto_inicial) || 0;
-        adiciones += Number(hijo.adiciones) || 0;
-        reducciones += Number(hijo.reducciones) || 0;
+        for (const hijo of hijosDirectos) {
+          pptoIni += Number(hijo.presupuesto_inicial) || 0;
+          adiciones += Number(hijo.adiciones) || 0;
+          reducciones += Number(hijo.reducciones) || 0;
+        }
+
+        const pptoDef = pptoIni + adiciones - reducciones;
+
+        // Solo actualizar si los valores cambiaron
+        if (
+          Math.abs(Number(rubro.presupuesto_inicial) - pptoIni) > 0.01 ||
+          Math.abs(Number(rubro.adiciones) - adiciones) > 0.01 ||
+          Math.abs(Number(rubro.reducciones) - reducciones) > 0.01
+        ) {
+          await db.prepare(`
+            UPDATE rubros_ingresos
+            SET presupuesto_inicial = ?,
+                adiciones = ?,
+                reducciones = ?,
+                presupuesto_definitivo = ?
+            WHERE tenant_id = ? AND codigo = ?
+          `).bind(pptoIni, adiciones, reducciones, pptoDef, tenantId, codigoPadre).run();
+
+          huboActualizaciones = true;
+        }
       }
+    }
 
-      const pptoDef = pptoIni + adiciones - reducciones;
-
-      await db.prepare(`
-        UPDATE rubros_ingresos
-        SET presupuesto_inicial = ?,
-            adiciones = ?,
-            reducciones = ?,
-            presupuesto_definitivo = ?
-        WHERE tenant_id = ? AND codigo = ?
-      `).bind(pptoIni, adiciones, reducciones, pptoDef, tenantId, codigoPadre).run();
+    // Si no hubo actualizaciones, terminamos
+    if (!huboActualizaciones) {
+      break;
     }
   }
 }

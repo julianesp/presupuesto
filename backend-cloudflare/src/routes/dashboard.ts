@@ -28,7 +28,9 @@ app.get('/resumen', clerkAuth, async (c) => {
       WHERE tenant_id = ${tenantId}
         AND es_hoja = 1
     `);
-    const apropiacion = (apropiacionResult[0] as any)?.total || 0;
+    console.log('[DEBUG] apropiacionResult:', JSON.stringify(apropiacionResult, null, 2));
+    const apropiacion = Number((apropiacionResult[0] as any)?.total || 0);
+    console.log('[DEBUG] apropiacion final:', apropiacion);
 
     // 2. Total CDP expedidos
     const cdpResult = await db.all(sql`
@@ -36,7 +38,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       FROM cdp
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
     `);
-    const cdp = (cdpResult[0] as any)?.total || 0;
+    const cdp = Number((cdpResult[0] as any)?.total || 0);
 
     // 3. Total comprometido (RP)
     const comprometidoResult = await db.all(sql`
@@ -44,7 +46,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       FROM rp
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
     `);
-    const comprometido = (comprometidoResult[0] as any)?.total || 0;
+    const comprometido = Number((comprometidoResult[0] as any)?.total || 0);
 
     // 4. Total obligaciones
     const obligadoResult = await db.all(sql`
@@ -52,7 +54,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       FROM obligaciones
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
     `);
-    const obligado = (obligadoResult[0] as any)?.total || 0;
+    const obligado = Number((obligadoResult[0] as any)?.total || 0);
 
     // 5. Total pagos
     const pagadoResult = await db.all(sql`
@@ -60,7 +62,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       FROM pagos
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
     `);
-    const pagado = (pagadoResult[0] as any)?.total || 0;
+    const pagado = Number((pagadoResult[0] as any)?.total || 0);
 
     // 6. Cálculos derivados de gastos
     const saldo_disponible = apropiacion - cdp;
@@ -75,7 +77,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       WHERE tenant_id = ${tenantId}
         AND es_hoja = 1
     `);
-    const ppto_ingresos = (pptoIngresosResult[0] as any)?.total || 0;
+    const ppto_ingresos = Number((pptoIngresosResult[0] as any)?.total || 0);
 
     // 8. Total recaudado
     const recaudadoResult = await db.all(sql`
@@ -83,7 +85,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       FROM recaudos
       WHERE tenant_id = ${tenantId} AND estado != 'ANULADO'
     `);
-    const recaudado = (recaudadoResult[0] as any)?.total || 0;
+    const recaudado = Number((recaudadoResult[0] as any)?.total || 0);
 
     // 9. Cálculos derivados de ingresos
     const saldo_por_recaudar = ppto_ingresos - recaudado;
