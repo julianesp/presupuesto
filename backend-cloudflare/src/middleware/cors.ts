@@ -11,7 +11,7 @@ export function cors(env: Env) {
   return honoCors({
     origin: origins,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Dev-Email'],
     credentials: true,
     maxAge: 86400, // 24 horas
   });
