@@ -15,6 +15,48 @@ import { eq } from 'drizzle-orm';
 export const clerkAuth = createMiddleware<{ Bindings: Env; Variables: Variables }>(
   async (c, next) => {
     try {
+      // MODO DESARROLLO: Permitir autenticación con X-Dev-Email
+      const devEmail = c.req.header('X-Dev-Email');
+      if (c.env.ENVIRONMENT === 'development' && devEmail) {
+        console.log('[DEV MODE] Autenticando con X-Dev-Email:', devEmail);
+
+        const db = getDb(c.env);
+        const userRecord = await db.query.users.findFirst({
+          where: eq(users.email, devEmail.toLowerCase()),
+          with: {
+            tenant: true,
+          },
+        });
+
+        if (!userRecord) {
+          console.log('[DEV MODE] Usuario no encontrado:', devEmail);
+          return c.json({
+            error: 'Acceso denegado. Tu cuenta no está autorizada para usar este sistema.',
+            unauthorized: true,
+            dev_mode: true
+          }, 403);
+        }
+
+        if (!userRecord.activo) {
+          return c.json({ error: 'Usuario inactivo', dev_mode: true }, 403);
+        }
+
+        // Guardar info del usuario en el contexto
+        c.set('userId', String(userRecord.id));
+        c.set('tenantId', userRecord.tenantId);
+        c.set('userRole', userRecord.rol);
+
+        console.log('[DEV MODE] Usuario autenticado:', {
+          userId: userRecord.id,
+          tenantId: userRecord.tenantId,
+          rol: userRecord.rol
+        });
+
+        await next();
+        return;
+      }
+
+      // MODO PRODUCCIÓN: Verificar token de Clerk
       const authHeader = c.req.header('Authorization');
 
       if (!authHeader || !authHeader.startsWith('Bearer ')) {

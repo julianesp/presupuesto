@@ -28,9 +28,7 @@ app.get('/resumen', clerkAuth, async (c) => {
       WHERE tenant_id = ${tenantId}
         AND es_hoja = 1
     `);
-    console.log('[DEBUG] apropiacionResult:', JSON.stringify(apropiacionResult, null, 2));
     const apropiacion = Number((apropiacionResult[0] as any)?.total || 0);
-    console.log('[DEBUG] apropiacion final:', apropiacion);
 
     // 2. Total CDP expedidos
     const cdpResult = await db.all(sql`
