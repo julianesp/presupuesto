@@ -4,6 +4,7 @@
  */
 
 import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
 import app from './src/index';
 import type { Env } from './src/types/bindings';
 
@@ -21,15 +22,20 @@ const envAdapter: Env = {
   CORS_ORIGINS: process.env.CORS_ORIGINS || 'http://localhost:3000',
 };
 
-// Middleware para inyectar env en cada request
-app.use('*', async (c, next) => {
-  // Inyectar env en el contexto
+// App raíz que inyecta `env` ANTES de delegar en la app principal.
+// Importante: el inyector debe correr antes que los middlewares de `app`
+// (logger, CORS, auth), que dependen de `c.env`.
+const root = new Hono();
+
+root.use('*', async (c, next) => {
   (c.env as any) = envAdapter;
   await next();
 });
 
+root.route('/', app);
+
 serve({
-  fetch: app.fetch,
+  fetch: root.fetch,
   port,
 });
 

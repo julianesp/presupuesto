@@ -5,8 +5,11 @@
 import { cors as honoCors } from 'hono/cors';
 import type { Env } from '../types/bindings';
 
-export function cors(env: Env) {
-  const origins = env.CORS_ORIGINS.split(',').map(o => o.trim());
+export function cors(env?: Env) {
+  // Fallback defensivo: en algunos modos de arranque (p. ej. tsx server.ts)
+  // este middleware puede ejecutarse antes de que se inyecte `env`.
+  const corsOrigins = env?.CORS_ORIGINS || 'http://localhost:3000';
+  const origins = corsOrigins.split(',').map(o => o.trim());
 
   return honoCors({
     origin: origins,

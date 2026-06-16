@@ -24,14 +24,20 @@ env/
 # Next.js
 frontend/.next/
 frontend/out/
-frontend/node_modules/
+clerk-nextjs/.next/
+clerk-nextjs/out/
 
-# Node raíz
+# Node (todos los subproyectos)
 node_modules/
+**/node_modules/
 
 # Logs
 *.log
 npm-debug.log*
+pnpm-debug.log*
+
+# NOTA: los pnpm-lock.yaml SÍ deben versionarse (fijan versiones exactas).
+# No los agregues a este archivo.
 
 # OS
 .DS_Store

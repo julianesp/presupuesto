@@ -2,15 +2,20 @@
   "name": "sistema-presupuestal",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
   "scripts": {
-    "dev": "concurrently --names BACKEND,FRONTEND --prefix-colors cyan,magenta --kill-others-on-fail \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend-cloudflare && npm run dev",
-    "frontend": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "build:backend": "cd backend-cloudflare && npm run deploy",
-    "install:all": "npm install && cd backend-cloudflare && npm install && cd ../frontend && npm install",
-    "db:migrate": "cd backend-cloudflare && npm run db:migrate",
-    "add-user": "cd backend-cloudflare && npm run add-user"
+    "dev": "concurrently --names BACKEND,FRONTEND --prefix-colors cyan,magenta --kill-others-on-fail \"pnpm run backend\" \"pnpm run frontend\"",
+    "backend": "cd backend-cloudflare && pnpm run dev",
+    "frontend": "cd frontend && pnpm run dev",
+    "build": "cd frontend && pnpm run build",
+    "build:backend": "cd backend-cloudflare && pnpm run deploy",
+    "install:all": "pnpm install && cd backend-cloudflare && pnpm install && cd ../frontend && pnpm install",
+    "db:migrate": "cd backend-cloudflare && pnpm run db:migrate",
+    "add-user": "cd backend-cloudflare && pnpm run add-user"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
