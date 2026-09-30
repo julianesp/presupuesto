@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireEscritura } from '../middleware/auth';
+import { clerkAuth, requireEscritura, requireAnular, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { recaudos, rubrosIngresos } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -149,7 +149,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createRecaudoSchem
   );
 });
 
-app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updateRecaudoSchema), async (c) => {
+app.put('/:numero', clerkAuth, requireSuperAdmin, zValidator('json', updateRecaudoSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const data = c.req.valid('json');
@@ -189,7 +189,7 @@ app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updateRecaud
   });
 });
 
-app.put('/:numero/anular', clerkAuth, requireEscritura, async (c) => {
+app.put('/:numero/anular', clerkAuth, requireAnular, async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const db = getDb(c.env);

@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireEscritura } from '../middleware/auth';
+import { clerkAuth, requireEscritura, requireAnular, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { pagos, obligaciones, terceros } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -216,7 +216,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createPagoSchema),
   );
 });
 
-app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updatePagoSchema), async (c) => {
+app.put('/:numero', clerkAuth, requireSuperAdmin, zValidator('json', updatePagoSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const data = c.req.valid('json');
@@ -265,7 +265,7 @@ app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updatePagoSc
   });
 });
 
-app.put('/:numero/anular', clerkAuth, requireEscritura, async (c) => {
+app.put('/:numero/anular', clerkAuth, requireAnular, async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const db = getDb(c.env);

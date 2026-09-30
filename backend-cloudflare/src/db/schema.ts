@@ -28,6 +28,7 @@ export const users = sqliteTable('users', {
   nombre: text('nombre', { length: 300 }).notNull(),
   cargo: text('cargo', { length: 100 }),
   rol: text('rol', { length: 20 }).notNull().default('CONSULTA'), // ADMIN | TESORERO | CONSULTA
+  superAdmin: integer('super_admin', { mode: 'boolean' }).notNull().default(false), // Acceso total: editar y eliminar
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true),
   fechaCreacion: text('fecha_creacion').notNull(),
 }, (table) => ({

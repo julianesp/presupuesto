@@ -33,14 +33,14 @@ interface PermissionCheck {
   canDelete: boolean;
   canAnular: boolean;
   isAdmin: boolean;
-  isMarthaAdmin: boolean; // Usuario principal con todos los permisos
+  isSuperAdmin: boolean; // Usuario con acceso total (campo super_admin en BD)
 }
 
 /**
  * Hook para verificar permisos del usuario actual
  *
  * Reglas de permisos:
- * 1. marthacer7@gmail.com: TODOS los permisos (CRUD completo)
+ * 1. Super admin (superAdmin = true): TODOS los permisos (CRUD completo)
  * 2. ADMIN: Puede leer, crear y anular. NO puede editar ni eliminar definitivamente
  * 3. TESORERO: Puede leer y crear. NO puede editar, eliminar ni anular
  * 4. CONSULTA: Solo lectura
@@ -56,15 +56,12 @@ export function usePermissions(module?: PermissionModule): PermissionCheck {
       canDelete: false,
       canAnular: false,
       isAdmin: false,
-      isMarthaAdmin: false,
+      isSuperAdmin: false,
     };
   }
 
-  // Usuario principal con TODOS los permisos
-  const isMarthaAdmin = user.email === "marthacer7@gmail.com";
-
-  // Si es Martha, tiene TODOS los permisos
-  if (isMarthaAdmin) {
+  // Super admin: tiene TODOS los permisos
+  if (user.superAdmin) {
     return {
       canCreate: true,
       canRead: true,
@@ -72,7 +69,7 @@ export function usePermissions(module?: PermissionModule): PermissionCheck {
       canDelete: true,
       canAnular: true,
       isAdmin: true,
-      isMarthaAdmin: true,
+      isSuperAdmin: true,
     };
   }
 
@@ -84,11 +81,11 @@ export function usePermissions(module?: PermissionModule): PermissionCheck {
   return {
     canCreate: isAdmin || isTesorero,
     canRead: true, // Todos pueden leer
-    canUpdate: false, // Solo Martha puede editar
-    canDelete: false, // Solo Martha puede eliminar
-    canAnular: isAdmin, // Solo Admin y Martha pueden anular
+    canUpdate: false, // Solo super admin puede editar
+    canDelete: false, // Solo super admin puede eliminar
+    canAnular: isAdmin, // Solo Admin y super admin pueden anular
     isAdmin,
-    isMarthaAdmin: false,
+    isSuperAdmin: false,
   };
 }
 
@@ -119,9 +116,9 @@ export function useHasPermission(
 }
 
 /**
- * Hook para verificar si el usuario actual es Martha (admin principal)
+ * Hook para verificar si el usuario actual tiene acceso total (super admin)
  */
-export function useIsMarthaAdmin(): boolean {
+export function useIsSuperAdmin(): boolean {
   const { user } = useAuth();
-  return user?.email === "marthacer7@gmail.com";
+  return user?.superAdmin === true;
 }

@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireEscritura } from '../middleware/auth';
+import { clerkAuth, requireEscritura, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { rubrosGastos, cdp } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -259,7 +259,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createRubroGastoSc
  * PUT /api/rubros-gastos/:codigo
  * Editar un rubro existente
  */
-app.put('/:codigo', clerkAuth, requireEscritura, zValidator('json', updateRubroGastoSchema), async (c) => {
+app.put('/:codigo', clerkAuth, requireSuperAdmin, zValidator('json', updateRubroGastoSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const codigo = c.req.param('codigo');
   const data = c.req.valid('json');
@@ -325,7 +325,7 @@ app.put('/:codigo', clerkAuth, requireEscritura, zValidator('json', updateRubroG
  * DELETE /api/rubros-gastos/:codigo
  * Eliminar un rubro
  */
-app.delete('/:codigo', clerkAuth, requireEscritura, async (c) => {
+app.delete('/:codigo', clerkAuth, requireSuperAdmin, async (c) => {
   const tenantId = c.get('tenantId');
   const codigo = c.req.param('codigo');
   const db = getDb(c.env);

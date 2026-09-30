@@ -20,4 +20,5 @@ export interface Variables {
   userId: string;
   tenantId: string;
   userRole: string;
+  isSuperAdmin: boolean;
 }

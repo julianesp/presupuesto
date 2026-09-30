@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth } from '../middleware/auth';
+import { clerkAuth, requireAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { tenants, users } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -14,15 +14,6 @@ import { z } from 'zod';
 import { createId } from '@paralleldrive/cuid2';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
-
-// Middleware: solo ADMIN
-const requireAdmin = async (c: any, next: any) => {
-  const role = c.get('role');
-  if (role !== 'ADMIN') {
-    return c.json({ error: 'Acceso denegado. Se requiere rol ADMIN' }, 403);
-  }
-  await next();
-};
 
 const createTenantSchema = z.object({
   nombre: z.string().max(300),
@@ -36,12 +27,14 @@ const createUserSchema = z.object({
   nombre: z.string().max(300),
   cargo: z.string().max(100).optional(),
   rol: z.enum(['ADMIN', 'TESORERO', 'CONSULTA']),
+  superAdmin: z.boolean().optional(),
 });
 
 const updateUserSchema = z.object({
   nombre: z.string().max(300).optional(),
   cargo: z.string().max(100).optional(),
   rol: z.enum(['ADMIN', 'TESORERO', 'CONSULTA']).optional(),
+  superAdmin: z.boolean().optional(),
   activo: z.boolean().optional(),
 });
 
@@ -114,6 +107,11 @@ app.post('/usuarios', clerkAuth, requireAdmin, zValidator('json', createUserSche
   const data = c.req.valid('json');
   const db = getDb(c.env);
 
+  // Solo un super admin puede otorgar acceso total
+  if (data.superAdmin && !c.get('isSuperAdmin')) {
+    return c.json({ error: 'Solo un super administrador puede otorgar acceso total' }, 403);
+  }
+
   // Verificar email único
   const existing = await db.query.users.findFirst({
     where: eq(users.email, data.email),
@@ -131,6 +129,7 @@ app.post('/usuarios', clerkAuth, requireAdmin, zValidator('json', createUserSche
       nombre: data.nombre,
       cargo: data.cargo || null,
       rol: data.rol,
+      superAdmin: data.superAdmin ?? false,
       activo: true,
       fechaCreacion: new Date().toISOString(),
     })
@@ -146,6 +145,11 @@ app.put('/usuarios/:id', clerkAuth, requireAdmin, zValidator('json', updateUserS
   const data = c.req.valid('json');
   const db = getDb(c.env);
 
+  // Solo un super admin puede cambiar el acceso total
+  if (data.superAdmin !== undefined && !c.get('isSuperAdmin')) {
+    return c.json({ error: 'Solo un super administrador puede cambiar el acceso total' }, 403);
+  }
+
   // Verificar que existe
   const usuario = await db.query.users.findFirst({
     where: and(eq(users.id, id), eq(users.tenantId, tenantId)),
@@ -159,6 +163,7 @@ app.put('/usuarios/:id', clerkAuth, requireAdmin, zValidator('json', updateUserS
   if (data.nombre !== undefined) updates.nombre = data.nombre;
   if (data.cargo !== undefined) updates.cargo = data.cargo;
   if (data.rol !== undefined) updates.rol = data.rol;
+  if (data.superAdmin !== undefined) updates.superAdmin = data.superAdmin;
   if (data.activo !== undefined) updates.activo = data.activo;
 
   const [usuarioActualizado] = await db

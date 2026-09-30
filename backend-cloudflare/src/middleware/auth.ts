@@ -45,6 +45,7 @@ export const clerkAuth = createMiddleware<{ Bindings: Env; Variables: Variables 
         c.set('userId', String(userRecord.id));
         c.set('tenantId', userRecord.tenantId);
         c.set('userRole', userRecord.rol);
+        c.set('isSuperAdmin', userRecord.superAdmin);
 
         console.log('[DEV MODE] Usuario autenticado:', {
           userId: userRecord.id,
@@ -138,6 +139,7 @@ export const clerkAuth = createMiddleware<{ Bindings: Env; Variables: Variables 
       c.set('userId', String(userRecord.id));
       c.set('tenantId', userRecord.tenantId);
       c.set('userRole', userRecord.rol);
+      c.set('isSuperAdmin', userRecord.superAdmin);
 
       await next();
     } catch (error) {
@@ -154,7 +156,7 @@ export const requireAdmin = createMiddleware<{ Bindings: Env; Variables: Variabl
   async (c, next) => {
     const role = c.get('userRole');
 
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' && !c.get('isSuperAdmin')) {
       return c.json({ error: 'Requiere permisos de administrador' }, 403);
     }
 
@@ -169,7 +171,7 @@ export const requireTesorero = createMiddleware<{ Bindings: Env; Variables: Vari
   async (c, next) => {
     const role = c.get('userRole');
 
-    if (role !== 'ADMIN' && role !== 'TESORERO') {
+    if (role !== 'ADMIN' && role !== 'TESORERO' && !c.get('isSuperAdmin')) {
       return c.json({ error: 'Requiere permisos de tesorero o administrador' }, 403);
     }
 
@@ -181,3 +183,21 @@ export const requireTesorero = createMiddleware<{ Bindings: Env; Variables: Vari
  * Middleware para verificar permisos de escritura (alias de requireTesorero)
  */
 export const requireEscritura = requireTesorero;
+
+/**
+ * Middleware para anular documentos: ADMIN o super admin
+ */
+export const requireAnular = requireAdmin;
+
+/**
+ * Middleware para editar o eliminar registros: solo usuarios con acceso total (super admin)
+ */
+export const requireSuperAdmin = createMiddleware<{ Bindings: Env; Variables: Variables }>(
+  async (c, next) => {
+    if (!c.get('isSuperAdmin')) {
+      return c.json({ error: 'Requiere acceso total (super administrador) para editar o eliminar' }, 403);
+    }
+
+    await next();
+  }
+);

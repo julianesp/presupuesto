@@ -12,5 +12,6 @@ export interface UserInfo {
   nombre: string;
   cargo: string | null;
   rol: "ADMIN" | "TESORERO" | "CONSULTA";
+  superAdmin?: boolean; // Acceso total: editar y eliminar
   tenant: TenantInfo;
 }

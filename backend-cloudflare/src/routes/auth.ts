@@ -36,6 +36,7 @@ app.get('/me', clerkAuth, async (c) => {
     nombre: user.nombre,
     cargo: user.cargo,
     rol: user.rol,
+    superAdmin: user.superAdmin,
     activo: user.activo,
     tenant: {
       id: user.tenant.id,

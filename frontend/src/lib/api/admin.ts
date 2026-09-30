@@ -6,12 +6,14 @@ export interface UserCreate {
   nombre: string;
   cargo?: string;
   rol: "ADMIN" | "TESORERO" | "CONSULTA";
+  superAdmin?: boolean;
 }
 
 export interface UserUpdate {
   nombre?: string;
   cargo?: string;
   rol?: "ADMIN" | "TESORERO" | "CONSULTA";
+  superAdmin?: boolean;
   activo?: boolean;
 }
 

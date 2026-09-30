@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireEscritura } from '../middleware/auth';
+import { clerkAuth, requireEscritura, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { terceros } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -186,7 +186,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createTerceroSchem
  * PUT /api/terceros/:nit
  * Actualizar un tercero existente
  */
-app.put('/:nit', clerkAuth, requireEscritura, zValidator('json', updateTerceroSchema), async (c) => {
+app.put('/:nit', clerkAuth, requireSuperAdmin, zValidator('json', updateTerceroSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const nit = c.req.param('nit');
   const data = c.req.valid('json');
@@ -236,7 +236,7 @@ app.put('/:nit', clerkAuth, requireEscritura, zValidator('json', updateTerceroSc
  * DELETE /api/terceros/:nit
  * Eliminar un tercero
  */
-app.delete('/:nit', clerkAuth, requireEscritura, async (c) => {
+app.delete('/:nit', clerkAuth, requireSuperAdmin, async (c) => {
   const tenantId = c.get('tenantId');
   const nit = c.req.param('nit');
   const db = getDb(c.env);

@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireEscritura } from '../middleware/auth';
+import { clerkAuth, requireEscritura, requireAnular, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { cdp, rubrosGastos, rp } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -303,7 +303,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createCdpSchema), 
  * PUT /api/cdp/:numero
  * Editar un CDP existente
  */
-app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updateCdpSchema), async (c) => {
+app.put('/:numero', clerkAuth, requireSuperAdmin, zValidator('json', updateCdpSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const data = c.req.valid('json');
@@ -404,7 +404,7 @@ app.put('/:numero', clerkAuth, requireEscritura, zValidator('json', updateCdpSch
  * PUT /api/cdp/:numero/anular
  * Anular un CDP
  */
-app.put('/:numero/anular', clerkAuth, requireEscritura, async (c) => {
+app.put('/:numero/anular', clerkAuth, requireAnular, async (c) => {
   const tenantId = c.get('tenantId');
   const numero = parseInt(c.req.param('numero'));
   const db = getDb(c.env);

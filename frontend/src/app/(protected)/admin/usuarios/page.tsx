@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { LoadingTable } from "@/components/common/LoadingTable";
 import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { EmptyState } from "@/components/common/EmptyState";
-import { usePermissions } from "@/hooks/usePermissions";
+import { usePermissions, useIsSuperAdmin } from "@/hooks/usePermissions";
 import {
   Table,
   TableBody,
@@ -53,19 +53,27 @@ function UsuarioForm({
   onSave: (data: UserCreate | UserUpdate) => Promise<void>;
   onClose: () => void;
 }) {
+  const canGrantSuperAdmin = useIsSuperAdmin();
   const [email, setEmail] = useState(initial?.email ?? "");
   const [nombre, setNombre] = useState(initial?.nombre ?? "");
   const [cargo, setCargo] = useState(initial?.cargo ?? "");
   const [rol, setRol] = useState<"ADMIN" | "TESORERO" | "CONSULTA">(
     initial?.rol ?? "CONSULTA",
   );
+  const [superAdmin, setSuperAdmin] = useState(initial?.superAdmin ?? false);
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
-      await onSave({ email, nombre, cargo: cargo || undefined, rol });
+      await onSave({
+        email,
+        nombre,
+        cargo: cargo || undefined,
+        rol,
+        ...(canGrantSuperAdmin ? { superAdmin } : {}),
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -116,6 +124,17 @@ function UsuarioForm({
           </SelectContent>
         </Select>
       </div>
+      {canGrantSuperAdmin && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={superAdmin}
+            onChange={(e) => setSuperAdmin(e.target.checked)}
+            className="h-4 w-4"
+          />
+          Acceso total (puede editar y eliminar registros)
+        </label>
+      )}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancelar
@@ -233,6 +252,11 @@ export default function UsuariosPage() {
                     >
                       {u.rol}
                     </span>
+                    {u.superAdmin && (
+                      <span className="ml-1 text-xs font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-700">
+                        Acceso total
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={(u as UserInfo & { activo?: boolean }).activo === false ? "secondary" : "outline"}>

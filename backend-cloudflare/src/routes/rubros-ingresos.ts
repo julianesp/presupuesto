@@ -3,7 +3,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireTesorero } from '../middleware/auth';
+import { clerkAuth, requireTesorero, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { rubrosIngresos, recaudos, reconocimientos } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -202,7 +202,7 @@ app.post('/', clerkAuth, requireTesorero, zValidator('json', createRubroSchema),
  * PUT /api/rubros-ingresos/:codigo
  * Actualizar un rubro de ingresos
  */
-app.put('/:codigo', clerkAuth, requireTesorero, zValidator('json', updateRubroSchema), async (c) => {
+app.put('/:codigo', clerkAuth, requireSuperAdmin, zValidator('json', updateRubroSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const codigo = c.req.param('codigo');
   const data = c.req.valid('json');
@@ -244,7 +244,7 @@ app.put('/:codigo', clerkAuth, requireTesorero, zValidator('json', updateRubroSc
  * DELETE /api/rubros-ingresos/:codigo
  * Eliminar un rubro de ingresos
  */
-app.delete('/:codigo', clerkAuth, requireTesorero, async (c) => {
+app.delete('/:codigo', clerkAuth, requireSuperAdmin, async (c) => {
   const tenantId = c.get('tenantId');
   const codigo = c.req.param('codigo');
 

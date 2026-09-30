@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { clerkAuth, requireTesorero } from '../middleware/auth';
+import { clerkAuth, requireTesorero, requireSuperAdmin } from '../middleware/auth';
 import { getDb } from '../db';
 import { cuentasBancarias } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
@@ -71,7 +71,7 @@ app.post('/', clerkAuth, requireTesorero, zValidator('json', createSchema), asyn
 });
 
 // PUT /api/cuentas-bancarias/:id - Actualizar cuenta bancaria
-app.put('/:id', clerkAuth, requireTesorero, zValidator('json', updateSchema), async (c) => {
+app.put('/:id', clerkAuth, requireSuperAdmin, zValidator('json', updateSchema), async (c) => {
   const tenantId = c.get('tenantId');
   const id = parseInt(c.req.param('id'));
   const data = c.req.valid('json');
@@ -110,7 +110,7 @@ app.put('/:id', clerkAuth, requireTesorero, zValidator('json', updateSchema), as
 });
 
 // DELETE /api/cuentas-bancarias/:id - Desactivar cuenta bancaria
-app.delete('/:id', clerkAuth, requireTesorero, async (c) => {
+app.delete('/:id', clerkAuth, requireSuperAdmin, async (c) => {
   const tenantId = c.get('tenantId');
   const id = parseInt(c.req.param('id'));
   const db = getDb(c.env);
