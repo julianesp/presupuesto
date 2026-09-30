@@ -29,8 +29,8 @@ export default function CadenaPresupuestalPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Cadena Presupuestal</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Cadena Presupuestal</h1>
       </div>
       {loading && <LoadingTable rows={5} cols={3} />}
       {error && <ErrorAlert message={error} onRetry={load} />}

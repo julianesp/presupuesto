@@ -7,6 +7,7 @@ import { Hono } from 'hono';
 import { clerkAuth, requireEscritura } from '../middleware/auth';
 import type { Env, Variables } from '../types/bindings';
 import { importarCatalogoExcel } from '../services/importacion';
+import { generarPlantilla, importarEjecucion } from '../services/ejecucion-historica';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -46,6 +47,45 @@ app.post('/catalogo-excel', requireEscritura, async (c) => {
 
   } catch (error: any) {
     console.error('Error al importar Excel:', error);
+    return c.json({ error: error.message || 'Error al importar archivo' }, 500);
+  }
+});
+
+/**
+ * GET /api/importacion/plantilla-ejecucion
+ * Plantilla Excel para cargar la ejecución histórica (saldos iniciales, terceros,
+ * CDP, RP, obligaciones, pagos, reconocimientos y recaudos) de la empresa activa
+ */
+app.get('/plantilla-ejecucion', requireEscritura, async (c) => {
+  const buffer = await generarPlantilla(c.env.DB!, c.get('tenantId'));
+  return c.body(buffer, 200, {
+    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'Content-Disposition': 'attachment; filename="plantilla_ejecucion_historica.xlsx"',
+  });
+});
+
+/**
+ * POST /api/importacion/ejecucion-historica
+ * Carga la plantilla diligenciada. Valida todo antes de guardar (todo o nada).
+ */
+app.post('/ejecucion-historica', requireEscritura, async (c) => {
+  const formData = await c.req.formData();
+  const fileEntry = formData.get('file');
+
+  if (!fileEntry || typeof fileEntry === 'string') {
+    return c.json({ error: 'No se proporcionó archivo válido' }, 400);
+  }
+
+  const file = fileEntry as File;
+  if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+    return c.json({ error: 'El archivo debe ser .xlsx o .xls' }, 400);
+  }
+
+  try {
+    const resultado = await importarEjecucion(c.env.DB!, c.get('tenantId'), await file.arrayBuffer());
+    return c.json(resultado, resultado.ok ? 200 : 422);
+  } catch (error: any) {
+    console.error('Error al importar ejecución histórica:', error);
     return c.json({ error: error.message || 'Error al importar archivo' }, 500);
   }
 });
@@ -112,7 +152,8 @@ app.delete('/limpiar-datos', requireEscritura, async (c) => {
     await c.env.DB.prepare('DELETE FROM cdp WHERE tenant_id = ?').bind(tenantId).run();
     await c.env.DB.prepare('DELETE FROM recaudos WHERE tenant_id = ?').bind(tenantId).run();
     await c.env.DB.prepare('DELETE FROM reconocimientos WHERE tenant_id = ?').bind(tenantId).run();
-    await c.env.DB.prepare('DELETE FROM detalle_modificaciones').run(); // Esta tabla no tiene tenant_id
+    // detalle_modificaciones no tiene tenant_id: se filtra por las modificaciones de esta empresa
+    await c.env.DB.prepare('DELETE FROM detalle_modificaciones WHERE id_modificacion IN (SELECT id FROM modificaciones WHERE tenant_id = ?)').bind(tenantId).run();
     await c.env.DB.prepare('DELETE FROM modificaciones WHERE tenant_id = ?').bind(tenantId).run();
     await c.env.DB.prepare('DELETE FROM rubros_gastos WHERE tenant_id = ?').bind(tenantId).run();
     await c.env.DB.prepare('DELETE FROM rubros_ingresos WHERE tenant_id = ?').bind(tenantId).run();

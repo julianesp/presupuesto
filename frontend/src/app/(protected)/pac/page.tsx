@@ -117,7 +117,7 @@ export default function PacPage() {
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Plan Anual de Caja (PAC)</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Plan Anual de Caja (PAC)</h1>
           <p className="text-sm text-slate-500 mt-1">Programación mensual por rubro de gasto</p>
         </div>
         {rubros.length > 0 && permissions.canUpdate && (

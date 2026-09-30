@@ -245,9 +245,9 @@ export default function SIAPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Informe SIA — Contraloría</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Informe SIA — Contraloría</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Ejecución presupuestal en formato Sistema de Información y Auditoría
           </p>
@@ -293,7 +293,7 @@ export default function SIAPage() {
 
       {/* ── Sección de exportación CSV para Contraloría ── */}
       <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-semibold text-slate-800">
               Formatos CSV — Contraloría (SIA)

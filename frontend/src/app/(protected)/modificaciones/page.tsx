@@ -115,7 +115,7 @@ function ModifForm({
             <Label>Valor</Label>
             <CurrencyInput value={valor} onChange={setValor} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>N° Acto</Label>
               <Input value={numeroActo} onChange={(e) => setNumeroActo(e.target.value)} />
@@ -212,7 +212,7 @@ export default function ModificacionesPage() {
             {items.map((m) => (
               <TableRow key={m.id} className={m.estado === "Anulado" ? "opacity-60" : ""}>
                 <TableCell className="font-mono">{m.id}</TableCell>
-                <TableCell>{formatDate(m.fecha)}</TableCell>
+                <TableCell className="whitespace-nowrap">{formatDate(m.fecha)}</TableCell>
                 <TableCell className="text-sm">{m.tipo}</TableCell>
                 <TableCell className="text-sm">{m.numero_acto}</TableCell>
                 <TableCell className="text-sm max-w-xs truncate">{m.descripcion}</TableCell>
@@ -235,7 +235,7 @@ export default function ModificacionesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900 mb-6">Modificaciones Presupuestales</h1>
+      <h1 className="text-xl md:text-2xl font-semibold text-slate-900 mb-6">Modificaciones Presupuestales</h1>
       {loading && <LoadingTable />}
       {error && <ErrorAlert message={error} onRetry={load} />}
       {!loading && !error && (

@@ -29,6 +29,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return {};
 }
 
+export interface ResultadoEjecucionHistorica {
+  ok: boolean;
+  errores: string[];
+  resumen: Record<string, number>;
+}
+
 async function uploadFile<T>(path: string, file: File, params?: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`);
   if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
@@ -105,6 +111,31 @@ export const importacionApi = {
     if (!res.ok) throw new Error(`Error ${res.status}`);
     const blob = await res.blob();
     triggerDownload(blob, "plantilla_presupuestal.xlsx");
+  },
+
+  async descargarPlantillaEjecucion(): Promise<void> {
+    const authHeaders = await getAuthHeaders();
+    const res = await fetch(`${BASE_URL}/api/importacion/plantilla-ejecucion`, {
+      headers: authHeaders,
+    });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    const blob = await res.blob();
+    triggerDownload(blob, "plantilla_ejecucion_historica.xlsx");
+  },
+
+  /** Carga la ejecución histórica. Si hay errores de validación los devuelve sin guardar nada. */
+  async subirEjecucionHistorica(file: File): Promise<ResultadoEjecucionHistorica> {
+    const authHeaders = await getAuthHeaders();
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch(`${BASE_URL}/api/importacion/ejecucion-historica`, {
+      method: "POST",
+      headers: authHeaders,
+      body,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok || res.status === 422) return data as ResultadoEjecucionHistorica;
+    throw new Error(data.error || `Error ${res.status}`);
   },
 
   async sincronizarPadres(): Promise<{ ok: boolean; mensaje: string }> {

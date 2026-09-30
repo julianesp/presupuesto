@@ -94,8 +94,8 @@ function TerceroForm({
           <DialogTitle>{isEditing ? "Editar Tercero" : "Nuevo Tercero"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2 space-y-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="sm:col-span-2 space-y-1.5">
               <Label>NIT</Label>
               <Input value={nit} onChange={(e) => setNit(e.target.value)} required disabled={isEditing} />
             </div>
@@ -123,7 +123,7 @@ function TerceroForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Dirección</Label>
               <Input value={direccion} onChange={(e) => setDireccion(e.target.value)} />

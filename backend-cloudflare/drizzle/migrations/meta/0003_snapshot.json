@@ -1,0 +1,2313 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "6ad74822-9131-4163-a2e9-105245e7897b",
+  "prevId": "97fa56b9-2aba-4bcd-aa93-072aeb7ee622",
+  "tables": {
+    "cat_conceptos": {
+      "name": "cat_conceptos",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cat_fuentes": {
+      "name": "cat_fuentes",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cat_items": {
+      "name": "cat_items",
+      "columns": {
+        "codigo": {
+          "name": "codigo",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cdp": {
+      "name": "cdp",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "objeto": {
+          "name": "objeto",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "fuente_sifse": {
+          "name": "fuente_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "item_sifse": {
+          "name": "item_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_cdp_tenant": {
+          "name": "ix_cdp_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cdp_tenant_id_tenants_id_fk": {
+          "name": "cdp_tenant_id_tenants_id_fk",
+          "tableFrom": "cdp",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "cdp_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk": {
+          "name": "cdp_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk",
+          "tableFrom": "cdp",
+          "tableTo": "rubros_gastos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cdp_tenant_id_numero_pk": {
+          "columns": [
+            "tenant_id",
+            "numero"
+          ],
+          "name": "cdp_tenant_id_numero_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "comprobantes_contables": {
+      "name": "comprobantes_contables",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "origen_tipo": {
+          "name": "origen_tipo",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "origen_numero": {
+          "name": "origen_numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_creacion": {
+          "name": "fecha_creacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ix_comprobantes_contables_tenant": {
+          "name": "ix_comprobantes_contables_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        },
+        "ux_comprobantes_contables_numero": {
+          "name": "ux_comprobantes_contables_numero",
+          "columns": [
+            "tenant_id",
+            "tipo",
+            "numero"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "comprobantes_contables_tenant_id_tenants_id_fk": {
+          "name": "comprobantes_contables_tenant_id_tenants_id_fk",
+          "tableFrom": "comprobantes_contables",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "config": {
+      "name": "config",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "clave": {
+          "name": "clave",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "config_tenant_id_tenants_id_fk": {
+          "name": "config_tenant_id_tenants_id_fk",
+          "tableFrom": "config",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "config_tenant_id_clave_pk": {
+          "columns": [
+            "tenant_id",
+            "clave"
+          ],
+          "name": "config_tenant_id_clave_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cuentas_bancarias": {
+      "name": "cuentas_bancarias",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "banco": {
+          "name": "banco",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_cuenta": {
+          "name": "numero_cuenta",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_cuenta": {
+          "name": "tipo_cuenta",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "titular": {
+          "name": "titular",
+          "type": "text(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "saldo": {
+          "name": "saldo",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "activa": {
+          "name": "activa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "ix_cuentas_bancarias_tenant": {
+          "name": "ix_cuentas_bancarias_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cuentas_bancarias_tenant_id_tenants_id_fk": {
+          "name": "cuentas_bancarias_tenant_id_tenants_id_fk",
+          "tableFrom": "cuentas_bancarias",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cuentas_contables": {
+      "name": "cuentas_contables",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "naturaleza": {
+          "name": "naturaleza",
+          "type": "text(1)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "es_auxiliar": {
+          "name": "es_auxiliar",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "requiere_tercero": {
+          "name": "requiere_tercero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "activa": {
+          "name": "activa",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cuentas_contables_tenant_id_tenants_id_fk": {
+          "name": "cuentas_contables_tenant_id_tenants_id_fk",
+          "tableFrom": "cuentas_contables",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "cuentas_contables_tenant_id_codigo_pk": {
+          "columns": [
+            "tenant_id",
+            "codigo"
+          ],
+          "name": "cuentas_contables_tenant_id_codigo_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "detalle_modificaciones": {
+      "name": "detalle_modificaciones",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_modificacion": {
+          "name": "id_modificacion",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_operacion": {
+          "name": "tipo_operacion",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "detalle_modificaciones_id_modificacion_modificaciones_id_fk": {
+          "name": "detalle_modificaciones_id_modificacion_modificaciones_id_fk",
+          "tableFrom": "detalle_modificaciones",
+          "tableTo": "modificaciones",
+          "columnsFrom": [
+            "id_modificacion"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "modificaciones": {
+      "name": "modificaciones",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_presupuesto": {
+          "name": "tipo_presupuesto",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "acto_administrativo": {
+          "name": "acto_administrativo",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "justificacion": {
+          "name": "justificacion",
+          "type": "text(2000)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'APROBADA'"
+        }
+      },
+      "indexes": {
+        "ix_modificaciones_tenant": {
+          "name": "ix_modificaciones_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "modificaciones_tenant_id_tenants_id_fk": {
+          "name": "modificaciones_tenant_id_tenants_id_fk",
+          "tableFrom": "modificaciones",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "movimientos_contables": {
+      "name": "movimientos_contables",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "comprobante_id": {
+          "name": "comprobante_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_cuenta": {
+          "name": "codigo_cuenta",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit_tercero": {
+          "name": "nit_tercero",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "debito": {
+          "name": "debito",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "credito": {
+          "name": "credito",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_movimientos_contables_comprobante": {
+          "name": "ix_movimientos_contables_comprobante",
+          "columns": [
+            "comprobante_id"
+          ],
+          "isUnique": false
+        },
+        "ix_movimientos_contables_cuenta": {
+          "name": "ix_movimientos_contables_cuenta",
+          "columns": [
+            "tenant_id",
+            "codigo_cuenta"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "movimientos_contables_tenant_id_tenants_id_fk": {
+          "name": "movimientos_contables_tenant_id_tenants_id_fk",
+          "tableFrom": "movimientos_contables",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_contables_comprobante_id_comprobantes_contables_id_fk": {
+          "name": "movimientos_contables_comprobante_id_comprobantes_contables_id_fk",
+          "tableFrom": "movimientos_contables",
+          "tableTo": "comprobantes_contables",
+          "columnsFrom": [
+            "comprobante_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_contables_tenant_id_codigo_cuenta_cuentas_contables_tenant_id_codigo_fk": {
+          "name": "movimientos_contables_tenant_id_codigo_cuenta_cuentas_contables_tenant_id_codigo_fk",
+          "tableFrom": "movimientos_contables",
+          "tableTo": "cuentas_contables",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_cuenta"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movimientos_contables_tenant_id_nit_tercero_terceros_tenant_id_nit_fk": {
+          "name": "movimientos_contables_tenant_id_nit_tercero_terceros_tenant_id_nit_fk",
+          "tableFrom": "movimientos_contables",
+          "tableTo": "terceros",
+          "columnsFrom": [
+            "tenant_id",
+            "nit_tercero"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "nit"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "obligaciones": {
+      "name": "obligaciones",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_rp": {
+          "name": "numero_rp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit_tercero": {
+          "name": "nit_tercero",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "factura": {
+          "name": "factura",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "fuente_sifse": {
+          "name": "fuente_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "item_sifse": {
+          "name": "item_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_obligaciones_tenant": {
+          "name": "ix_obligaciones_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "obligaciones_tenant_id_tenants_id_fk": {
+          "name": "obligaciones_tenant_id_tenants_id_fk",
+          "tableFrom": "obligaciones",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obligaciones_tenant_id_numero_rp_rp_tenant_id_numero_fk": {
+          "name": "obligaciones_tenant_id_numero_rp_rp_tenant_id_numero_fk",
+          "tableFrom": "obligaciones",
+          "tableTo": "rp",
+          "columnsFrom": [
+            "tenant_id",
+            "numero_rp"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "numero"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obligaciones_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk": {
+          "name": "obligaciones_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk",
+          "tableFrom": "obligaciones",
+          "tableTo": "rubros_gastos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "obligaciones_tenant_id_nit_tercero_terceros_tenant_id_nit_fk": {
+          "name": "obligaciones_tenant_id_nit_tercero_terceros_tenant_id_nit_fk",
+          "tableFrom": "obligaciones",
+          "tableTo": "terceros",
+          "columnsFrom": [
+            "tenant_id",
+            "nit_tercero"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "nit"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "obligaciones_tenant_id_numero_pk": {
+          "columns": [
+            "tenant_id",
+            "numero"
+          ],
+          "name": "obligaciones_tenant_id_numero_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "pac": {
+      "name": "pac",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "descripcion": {
+          "name": "descripcion",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_estimado": {
+          "name": "valor_estimado",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tipo_contrato": {
+          "name": "tipo_contrato",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fecha_estimada": {
+          "name": "fecha_estimada",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PLANEADO'"
+        }
+      },
+      "indexes": {
+        "ix_pac_tenant": {
+          "name": "ix_pac_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pac_tenant_id_tenants_id_fk": {
+          "name": "pac_tenant_id_tenants_id_fk",
+          "tableFrom": "pac",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pac_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk": {
+          "name": "pac_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk",
+          "tableFrom": "pac",
+          "tableTo": "rubros_gastos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "pagos": {
+      "name": "pagos",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_obligacion": {
+          "name": "numero_obligacion",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit_tercero": {
+          "name": "nit_tercero",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "concepto": {
+          "name": "concepto",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "medio_pago": {
+          "name": "medio_pago",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Transferencia'"
+        },
+        "no_comprobante": {
+          "name": "no_comprobante",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "cuenta_bancaria_id": {
+          "name": "cuenta_bancaria_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "fuente_sifse": {
+          "name": "fuente_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "item_sifse": {
+          "name": "item_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_pagos_tenant": {
+          "name": "ix_pagos_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pagos_tenant_id_tenants_id_fk": {
+          "name": "pagos_tenant_id_tenants_id_fk",
+          "tableFrom": "pagos",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pagos_tenant_id_numero_obligacion_obligaciones_tenant_id_numero_fk": {
+          "name": "pagos_tenant_id_numero_obligacion_obligaciones_tenant_id_numero_fk",
+          "tableFrom": "pagos",
+          "tableTo": "obligaciones",
+          "columnsFrom": [
+            "tenant_id",
+            "numero_obligacion"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "numero"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pagos_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk": {
+          "name": "pagos_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk",
+          "tableFrom": "pagos",
+          "tableTo": "rubros_gastos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pagos_tenant_id_nit_tercero_terceros_tenant_id_nit_fk": {
+          "name": "pagos_tenant_id_nit_tercero_terceros_tenant_id_nit_fk",
+          "tableFrom": "pagos",
+          "tableTo": "terceros",
+          "columnsFrom": [
+            "tenant_id",
+            "nit_tercero"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "nit"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pagos_tenant_id_numero_pk": {
+          "columns": [
+            "tenant_id",
+            "numero"
+          ],
+          "name": "pagos_tenant_id_numero_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "periodos_contables": {
+      "name": "periodos_contables",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "anio": {
+          "name": "anio",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mes": {
+          "name": "mes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cerrado": {
+          "name": "cerrado",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "fecha_cierre": {
+          "name": "fecha_cierre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "periodos_contables_tenant_id_tenants_id_fk": {
+          "name": "periodos_contables_tenant_id_tenants_id_fk",
+          "tableFrom": "periodos_contables",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "periodos_contables_tenant_id_anio_mes_pk": {
+          "columns": [
+            "tenant_id",
+            "anio",
+            "mes"
+          ],
+          "name": "periodos_contables_tenant_id_anio_mes_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "recaudos": {
+      "name": "recaudos",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "concepto": {
+          "name": "concepto",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "no_comprobante": {
+          "name": "no_comprobante",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "cuenta_bancaria_id": {
+          "name": "cuenta_bancaria_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_recaudos_tenant": {
+          "name": "ix_recaudos_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "recaudos_tenant_id_tenants_id_fk": {
+          "name": "recaudos_tenant_id_tenants_id_fk",
+          "tableFrom": "recaudos",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "recaudos_tenant_id_codigo_rubro_rubros_ingresos_tenant_id_codigo_fk": {
+          "name": "recaudos_tenant_id_codigo_rubro_rubros_ingresos_tenant_id_codigo_fk",
+          "tableFrom": "recaudos",
+          "tableTo": "rubros_ingresos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recaudos_tenant_id_numero_pk": {
+          "columns": [
+            "tenant_id",
+            "numero"
+          ],
+          "name": "recaudos_tenant_id_numero_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "reconocimientos": {
+      "name": "reconocimientos",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "concepto": {
+          "name": "concepto",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_reconocido": {
+          "name": "valor_reconocido",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor_recaudado": {
+          "name": "valor_recaudado",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDIENTE'"
+        }
+      },
+      "indexes": {
+        "ix_reconocimientos_tenant": {
+          "name": "ix_reconocimientos_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "reconocimientos_tenant_id_tenants_id_fk": {
+          "name": "reconocimientos_tenant_id_tenants_id_fk",
+          "tableFrom": "reconocimientos",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reconocimientos_tenant_id_codigo_rubro_rubros_ingresos_tenant_id_codigo_fk": {
+          "name": "reconocimientos_tenant_id_codigo_rubro_rubros_ingresos_tenant_id_codigo_fk",
+          "tableFrom": "reconocimientos",
+          "tableTo": "rubros_ingresos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "rp": {
+      "name": "rp",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "numero_cdp": {
+          "name": "numero_cdp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_rubro": {
+          "name": "codigo_rubro",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit_tercero": {
+          "name": "nit_tercero",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "objeto": {
+          "name": "objeto",
+          "type": "text(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valor": {
+          "name": "valor",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "fuente_sifse": {
+          "name": "fuente_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "item_sifse": {
+          "name": "item_sifse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_rp_tenant": {
+          "name": "ix_rp_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "rp_tenant_id_tenants_id_fk": {
+          "name": "rp_tenant_id_tenants_id_fk",
+          "tableFrom": "rp",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rp_tenant_id_numero_cdp_cdp_tenant_id_numero_fk": {
+          "name": "rp_tenant_id_numero_cdp_cdp_tenant_id_numero_fk",
+          "tableFrom": "rp",
+          "tableTo": "cdp",
+          "columnsFrom": [
+            "tenant_id",
+            "numero_cdp"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "numero"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rp_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk": {
+          "name": "rp_tenant_id_codigo_rubro_rubros_gastos_tenant_id_codigo_fk",
+          "tableFrom": "rp",
+          "tableTo": "rubros_gastos",
+          "columnsFrom": [
+            "tenant_id",
+            "codigo_rubro"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "codigo"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rp_tenant_id_nit_tercero_terceros_tenant_id_nit_fk": {
+          "name": "rp_tenant_id_nit_tercero_terceros_tenant_id_nit_fk",
+          "tableFrom": "rp",
+          "tableTo": "terceros",
+          "columnsFrom": [
+            "tenant_id",
+            "nit_tercero"
+          ],
+          "columnsTo": [
+            "tenant_id",
+            "nit"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rp_tenant_id_numero_pk": {
+          "columns": [
+            "tenant_id",
+            "numero"
+          ],
+          "name": "rp_tenant_id_numero_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "rubros_gastos": {
+      "name": "rubros_gastos",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta": {
+          "name": "cuenta",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "es_hoja": {
+          "name": "es_hoja",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "apropiacion_inicial": {
+          "name": "apropiacion_inicial",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "adiciones": {
+          "name": "adiciones",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "reducciones": {
+          "name": "reducciones",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "creditos": {
+          "name": "creditos",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "contracreditos": {
+          "name": "contracreditos",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "apropiacion_definitiva": {
+          "name": "apropiacion_definitiva",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_rubros_gastos_tenant": {
+          "name": "ix_rubros_gastos_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "rubros_gastos_tenant_id_tenants_id_fk": {
+          "name": "rubros_gastos_tenant_id_tenants_id_fk",
+          "tableFrom": "rubros_gastos",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rubros_gastos_tenant_id_codigo_pk": {
+          "columns": [
+            "tenant_id",
+            "codigo"
+          ],
+          "name": "rubros_gastos_tenant_id_codigo_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "rubros_ingresos": {
+      "name": "rubros_ingresos",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cuenta": {
+          "name": "cuenta",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "es_hoja": {
+          "name": "es_hoja",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "presupuesto_inicial": {
+          "name": "presupuesto_inicial",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "adiciones": {
+          "name": "adiciones",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "reducciones": {
+          "name": "reducciones",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "presupuesto_definitivo": {
+          "name": "presupuesto_definitivo",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "ix_rubros_ingresos_tenant": {
+          "name": "ix_rubros_ingresos_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "rubros_ingresos_tenant_id_tenants_id_fk": {
+          "name": "rubros_ingresos_tenant_id_tenants_id_fk",
+          "tableFrom": "rubros_ingresos",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "rubros_ingresos_tenant_id_codigo_pk": {
+          "columns": [
+            "tenant_id",
+            "codigo"
+          ],
+          "name": "rubros_ingresos_tenant_id_codigo_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tenants": {
+      "name": "tenants",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit": {
+          "name": "nit",
+          "type": "text(25)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "codigo_dane": {
+          "name": "codigo_dane",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vigencia_actual": {
+          "name": "vigencia_actual",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 2026
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVO'"
+        },
+        "fecha_creacion": {
+          "name": "fecha_creacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "tenants_nit_unique": {
+          "name": "tenants_nit_unique",
+          "columns": [
+            "nit"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "terceros": {
+      "name": "terceros",
+      "columns": {
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nit": {
+          "name": "nit",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "dv": {
+          "name": "dv",
+          "type": "text(2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "direccion": {
+          "name": "direccion",
+          "type": "text(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "telefono": {
+          "name": "telefono",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "email": {
+          "name": "email",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Natural'"
+        },
+        "banco": {
+          "name": "banco",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "tipo_cuenta": {
+          "name": "tipo_cuenta",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "no_cuenta": {
+          "name": "no_cuenta",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        }
+      },
+      "indexes": {
+        "ix_terceros_tenant": {
+          "name": "ix_terceros_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        },
+        "ix_terceros_nit": {
+          "name": "ix_terceros_nit",
+          "columns": [
+            "nit"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "terceros_tenant_id_tenants_id_fk": {
+          "name": "terceros_tenant_id_tenants_id_fk",
+          "tableFrom": "terceros",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "terceros_tenant_id_nit_pk": {
+          "columns": [
+            "tenant_id",
+            "nit"
+          ],
+          "name": "terceros_tenant_id_nit_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text(300)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cargo": {
+          "name": "cargo",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CONSULTA'"
+        },
+        "super_admin": {
+          "name": "super_admin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "activo": {
+          "name": "activo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "fecha_creacion": {
+          "name": "fecha_creacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        },
+        "ix_users_tenant": {
+          "name": "ix_users_tenant",
+          "columns": [
+            "tenant_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "users_tenant_id_tenants_id_fk": {
+          "name": "users_tenant_id_tenants_id_fk",
+          "tableFrom": "users",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

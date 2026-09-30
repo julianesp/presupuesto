@@ -135,7 +135,7 @@ export default function ComprobanteCDPPage() {
                 {rps_vinculados.map((r) => (
                   <tr key={r.numero} className="border-b border-slate-100">
                     <td className="px-3 py-1.5 font-mono font-bold">{r.numero}</td>
-                    <td className="px-3 py-1.5">{formatDate(r.fecha)}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap">{formatDate(r.fecha)}</td>
                     <td className="px-3 py-1.5">
                       <span className="font-medium">{r.tercero}</span>
                       {r.nit && <span className="text-slate-500 ml-1">({r.nit})</span>}

@@ -492,7 +492,7 @@ export function ChatPanel({ abierto, onCerrar }: ChatPanelProps) {
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-violet-600 text-white flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-violet-600 text-white flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="bg-white/20 rounded-full p-1">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">

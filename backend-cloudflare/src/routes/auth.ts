@@ -43,6 +43,7 @@ app.get('/me', clerkAuth, async (c) => {
       nombre: user.tenant.nombre,
       nit: user.tenant.nit,
       vigenciaActual: user.tenant.vigenciaActual,
+      vigencia_actual: user.tenant.vigenciaActual,
     },
   });
 });

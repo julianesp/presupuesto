@@ -9,6 +9,9 @@ import { LoadingTable } from "@/components/common/LoadingTable";
 import { ErrorAlert } from "@/components/common/ErrorAlert";
 import { CurrencyDisplay } from "@/components/common/CurrencyDisplay";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsSuperAdmin } from "@/hooks/usePermissions";
+import { empresasApi, type EmpresaResumen } from "@/lib/api/empresas";
+import { EmpresasPanel } from "@/components/dashboard/EmpresasPanel";
 
 function IndicadorEjecucion({
   label,
@@ -44,7 +47,9 @@ function IndicadorEjecucion({
 
 export default function DashboardPage() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const isSuperAdmin = useIsSuperAdmin();
   const [data, setData] = useState<DashboardResumen | null>(null);
+  const [empresas, setEmpresas] = useState<EmpresaResumen[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limpiando, setLimpiando] = useState(false);
@@ -53,8 +58,12 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await dashboardApi.getResumen();
+      const [res, lista] = await Promise.all([
+        dashboardApi.getResumen(),
+        empresasApi.list(),
+      ]);
       setData(res);
+      setEmpresas(lista);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error al cargar");
     } finally {
@@ -63,7 +72,7 @@ export default function DashboardPage() {
   }
 
   async function limpiarDatos() {
-    if (!confirm('¿Está seguro de eliminar TODOS los datos presupuestales? Esta acción NO se puede deshacer.')) {
+    if (!confirm(`¿Está seguro de eliminar TODOS los datos presupuestales de ${empresaActiva?.nombre ?? "la empresa activa"}? Esta acción NO se puede deshacer.`)) {
       return;
     }
 
@@ -119,14 +128,23 @@ export default function DashboardPage() {
     }
   }, [authLoading, isAuthenticated]);
 
+  const empresaActiva = empresas.find((e) => e.activa);
+
   if (authLoading || loading) return <LoadingTable rows={6} cols={3} />;
   if (error) return <ErrorAlert message={error} onRetry={load} />;
   if (!data) return null;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+      <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Dashboard</h1>
+
+      <EmpresasPanel empresas={empresas} puedeAdministrar={isSuperAdmin} onCambio={load} />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6">
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Detalle de la empresa activa</p>
+          <h2 className="text-lg font-semibold text-slate-900">{empresaActiva?.nombre ?? ""}</h2>
+        </div>
         <button
           onClick={limpiarDatos}
           disabled={limpiando}
@@ -141,7 +159,7 @@ export default function DashboardPage() {
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
           Ejecución de Gastos
         </p>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <KpiCard title="Apropiación Definitiva" value={data.apropiacion} />
           <KpiCard title="CDP Expedidos" value={data.cdp} />
           <KpiCard title="Saldo Disponible" value={data.saldo_disponible} />
@@ -197,7 +215,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Equilibrio + Cadena */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-4">
           <EquilibrioIndicator equilibrio={data.equilibrio} />
         </div>

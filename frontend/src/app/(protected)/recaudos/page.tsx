@@ -289,7 +289,7 @@ export default function RecaudosPage() {
               {recaudos.map((r) => (
                 <TableRow key={r.numero} className={r.estado === "Anulado" ? "opacity-60" : ""}>
                   <TableCell className="font-mono">{r.numero}</TableCell>
-                  <TableCell>{formatDate(r.fecha)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(r.fecha)}</TableCell>
                   <TableCell className="font-mono text-xs">{r.codigo_rubro}</TableCell>
                   <TableCell className="text-sm max-w-xs truncate">{r.concepto}</TableCell>
                   <TableCell className="text-sm">{r.no_comprobante}</TableCell>

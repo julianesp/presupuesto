@@ -1,0 +1,78 @@
+MÓDULO CONTABLE PARA ESTADOS FINANCIEROS
+========================================
+Marco normativo: Resolución 414 de 2014 de la Contaduría General de la Nación (CGN)
+Alcance: por empresa (cada empresa del sistema tiene su propio catálogo y su contabilidad)
+Asientos: automáticos (desde el presupuesto) + manuales
+Creado: 2026-09-29
+Regla general: todas las pantallas deben funcionar en celulares (diseño responsive).
+
+
+FASE 1 - BASE CONTABLE  (HECHA en local 2026-09-29, pendiente pasar a producción)
+----------------------
+[x] Catálogo de cuentas por empresa (Res. 414)
+    - Código, nombre, naturaleza (Débito/Crédito), nivel (clase, grupo, cuenta, subcuenta, auxiliar)
+    - Marca de cuentas que exigen tercero
+    - Solo las cuentas auxiliares (sin subcuentas) reciben movimientos
+    - Carga del catálogo desde Excel + creación/edición manual
+[x] Comprobantes contables manuales
+    - Tipos: diario, ajuste, depreciación, provisión, cierre
+    - Validación de partida doble (débitos = créditos)
+    - Numeración consecutiva por tipo de comprobante
+    - No se editan: se anulan y se registran de nuevo
+[x] Saldos iniciales contables
+    - Comprobante de apertura al 1 de enero cargado con plantilla Excel
+[x] Cierre por periodo (mes)
+    - Un mes cerrado no admite comprobantes nuevos ni anulaciones
+    - Solo un super admin puede reabrir un periodo
+
+
+    Pendientes antes de la Fase 2:
+  1. Catálogo oficial Res. 414. Lo que ves en local
+     es un catálogo de prueba de 23 cuentas que
+     hice para probar; hay que reemplazarlo por el
+     real. ¿Me pasas el Excel del catálogo o me
+     autorizas a descargarlo de contaduria.gov.co?
+  2. Retenciones en las obligaciones (retención en
+     la fuente, ICA, estampillas): ¿las incluyo en
+     la Fase 2?
+  3. Producción: ahora hay dos migraciones
+     pendientes, 0002 multiempresa y 0003
+     contabilidad, además de la carga de la IPS y
+     el despliegue. Nada está en commit todavía.
+     ¿Lo subo?
+
+FASE 2 - ASIENTOS AUTOMÁTICOS DESDE EL PRESUPUESTO
+--------------------------------------------------
+[ ] Parametrización rubro presupuestal -> cuentas contables, por empresa
+    Ej.: 2.1.2.02.02.009 (servicios asistenciales) -> débito 5xxx/7xxx, crédito 2401
+[ ] Asiento automático por documento:
+    - Obligación      : débito gasto/costo         / crédito cuenta por pagar
+    - Pago            : débito cuenta por pagar    / crédito bancos
+    - Reconocimiento  : débito cuenta por cobrar   / crédito ingreso
+    - Recaudo         : débito bancos              / crédito cuenta por cobrar
+[ ] La carga histórica (desde enero) también genera sus asientos
+[ ] Anular un documento presupuestal anula su asiento
+[ ] PENDIENTE DE DECIDIR: retenciones en las obligaciones (retención en la fuente,
+    ICA, estampillas). Hoy no se registran; se necesitan para que la cuenta por pagar
+    quede por el neto y las retenciones en 2436/2440.
+
+
+FASE 3 - INFORMES
+-----------------
+[ ] Libros oficiales: libro diario, libro mayor y balances
+[ ] Auxiliares por cuenta y por tercero
+[ ] Balance de prueba (saldo inicial, débitos, créditos, saldo final) por mes y por nivel
+[ ] Estados financieros básicos:
+    - Estado de situación financiera (comparativo)
+    - Estado de resultados (comparativo)
+[ ] Estados complementarios:
+    - Estado de cambios en el patrimonio
+    - Estado de flujos de efectivo (método indirecto)
+    - Notas a los estados financieros (texto editable)
+
+
+PENDIENTES DEL USUARIO
+----------------------
+[ ] Catálogo oficial Res. 414: entregar el Excel que usan (software contable actual o
+    contadora) o autorizar su descarga desde contaduria.gov.co
+[ ] Decidir si se incluyen retenciones en la Fase 2

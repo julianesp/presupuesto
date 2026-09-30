@@ -142,7 +142,7 @@ export default function ComprobanteRPPage() {
                 {obligaciones_vinculadas.map((o) => (
                   <tr key={o.numero} className="border-b border-slate-100">
                     <td className="px-3 py-1.5 font-mono font-bold">{o.numero}</td>
-                    <td className="px-3 py-1.5">{formatDate(o.fecha)}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap">{formatDate(o.fecha)}</td>
                     <td className="px-3 py-1.5">{o.factura || "—"}</td>
                     <td className="px-3 py-1.5 text-right font-mono">{formatCOP(o.valor)}</td>
                     <td className="px-3 py-1.5">{o.estado}</td>

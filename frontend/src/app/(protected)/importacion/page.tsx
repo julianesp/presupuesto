@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { EjecucionHistoricaCard } from "@/components/importacion/EjecucionHistoricaCard";
 import { importacionApi, descargarPlantillaCSV, type ResultadoImportacion } from "@/lib/api/importacion";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -35,13 +36,13 @@ function ResultadoPanel({ resultado }: { resultado: ResultadoImportacion }) {
       </div>
 
       {esExcel ? (
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <Stat label="Plan de Gastos" value={resultado.rubros_gastos ?? 0} />
           <Stat label="Plan de Ingresos" value={resultado.rubros_ingresos ?? 0} />
           <Stat label="Total Gastos" value={formatCOP(resultado.total_gastos ?? 0)} />
           <Stat label="Total Ingresos" value={formatCOP(resultado.total_ingresos ?? 0)} />
           {resultado.diferencia !== undefined && (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Stat
                 label="Diferencia (Ingresos − Gastos)"
                 value={formatCOP(resultado.diferencia)}
@@ -326,7 +327,7 @@ export default function ImportacionPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Carga de Planes Presupuestales</h1>
+        <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Carga de Planes Presupuestales</h1>
         <p className="text-sm text-slate-500 mt-1">
           Descarga la plantilla, diligénciala y cárgala para alimentar las ejecuciones de ingresos y gastos.
         </p>
@@ -459,6 +460,8 @@ export default function ImportacionPage() {
         </ImportCard>
 
       </div>
+
+      <EjecucionHistoricaCard />
     </div>
   );
 }

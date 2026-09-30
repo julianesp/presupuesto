@@ -62,9 +62,9 @@ export default function InformeTerceroPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Informe por Tercero</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Informe por Tercero</h1>
           <p className="text-sm text-slate-500 mt-1">Todos los documentos de un proveedor en el período</p>
         </div>
         {data && (
@@ -121,7 +121,7 @@ export default function InformeTerceroPage() {
           </div>
 
           {/* Totales */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 text-center">
               <p className="text-xs text-violet-600 uppercase font-semibold">Total RP</p>
               <p className="text-lg font-semibold text-violet-900 mt-1"><CurrencyDisplay value={data.total_rp} /></p>

@@ -151,7 +151,7 @@ export default function ComprobanteObligacionPage() {
                 {pagos_vinculados.map((p) => (
                   <tr key={p.numero} className="border-b border-slate-100">
                     <td className="px-3 py-1.5 font-mono font-bold">{p.numero}</td>
-                    <td className="px-3 py-1.5">{formatDate(p.fecha)}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap">{formatDate(p.fecha)}</td>
                     <td className="px-3 py-1.5">{p.medio_pago}</td>
                     <td className="px-3 py-1.5">{p.no_comprobante || "—"}</td>
                     <td className="px-3 py-1.5 text-right font-mono">{formatCOP(p.valor)}</td>

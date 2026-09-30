@@ -230,7 +230,7 @@ export default function ObligacionesPage() {
               {obligaciones.map((o) => (
                 <TableRow key={o.numero} className={o.estado === "Anulado" ? "opacity-60" : ""}>
                   <TableCell className="font-mono">{o.numero}</TableCell>
-                  <TableCell>{formatDate(o.fecha)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(o.fecha)}</TableCell>
                   <TableCell className="font-mono">{o.rp_numero}</TableCell>
                   <TableCell className="font-mono text-xs">{o.codigo_rubro}</TableCell>
                   <TableCell className="text-sm">{o.nombre_tercero || o.nit_tercero}</TableCell>

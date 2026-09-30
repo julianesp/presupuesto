@@ -89,7 +89,7 @@ function EditPagoForm({
             <Label>Concepto</Label>
             <Input value={concepto} onChange={(e) => setConcepto(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Medio de Pago</Label>
               <Select value={medioPago} onValueChange={setMedioPago}>
@@ -188,7 +188,7 @@ function PagoForm({
             <Label>Concepto</Label>
             <Input value={concepto} onChange={(e) => setConcepto(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Medio de Pago</Label>
               <Select value={medioPago} onValueChange={setMedioPago}>
@@ -319,7 +319,7 @@ export default function PagosPage() {
               {pagos.map((p) => (
                 <TableRow key={p.numero} className={p.estado === "Anulado" ? "opacity-60" : ""}>
                   <TableCell className="font-mono">{p.numero}</TableCell>
-                  <TableCell>{formatDate(p.fecha)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(p.fecha)}</TableCell>
                   <TableCell className="font-mono">{p.obligacion_numero}</TableCell>
                   <TableCell className="font-mono text-xs">{p.codigo_rubro}</TableCell>
                   <TableCell className="text-sm">{p.nombre_tercero || p.nit_tercero}</TableCell>

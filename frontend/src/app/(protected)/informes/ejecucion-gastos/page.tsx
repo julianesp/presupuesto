@@ -30,8 +30,8 @@ export default function EjecucionGastosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Ejecución de Gastos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Ejecución de Gastos</h1>
         <MesSelector value={mes} onChange={setMes} label="Todos los meses" />
       </div>
       {loading && <LoadingTable rows={10} cols={10} />}
@@ -43,14 +43,14 @@ export default function EjecucionGastosPage() {
               <TableRow className="bg-slate-50">
                 <TableHead className="text-xs uppercase tracking-wide text-slate-700 sticky left-0 bg-slate-50 z-10 w-28">Código</TableHead>
                 <TableHead className="text-xs uppercase tracking-wide text-slate-700 sticky left-28 bg-slate-50 z-10 min-w-52">Cuenta</TableHead>
-                {["Ppto Inicial", "Adiciones", "Reducciones", "Créditos", "Contracréditos", "Ppto Definitivo", "Comp Ant", "Comp Mes", "Comp Acum", "Pago Ant", "Pago Mes", "Pago Acum", "Saldo Aprop", "Saldo x Pagar"].map((h) => (
+                {["Ppto Inicial", "Adiciones", "Reducciones", "Créditos", "Contracréditos", "Ppto Definitivo", "CDP Acum", "Comp Ant", "Comp Mes", "Comp Acum", "Oblig Ant", "Oblig Mes", "Oblig Acum", "Pago Ant", "Pago Mes", "Pago Acum", "Saldo Disponible", "Reservas", "Cuentas x Pagar"].map((h) => (
                   <TableHead key={h} className="text-xs uppercase tracking-wide text-slate-700 text-right min-w-28">{h}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
-                <TableRow key={r.codigo} className={r.es_hoja === 0 ? "bg-slate-50 font-semibold" : ""}>
+                <TableRow key={r.codigo} className={r.es_hoja === 0 ? "bg-slate-50 font-semibold" : "bg-white"}>
                   <TableCell className="font-mono text-xs sticky left-0 bg-inherit z-10">{r.codigo}</TableCell>
                   <TableCell className={`sticky left-28 bg-inherit z-10 ${rubroIndentClass(r.codigo)}`}>{r.cuenta}</TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.ppto_inicial} /></TableCell>
@@ -59,14 +59,19 @@ export default function EjecucionGastosPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={r.creditos} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.contracreditos} /></TableCell>
                   <TableCell className="text-right font-medium"><CurrencyDisplay value={r.ppto_definitivo} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.cdp_acumulado} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.comp_anterior} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.comp_mes} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.comp_acumulado} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.oblig_anterior} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.oblig_mes} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.oblig_acumulado} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.pago_anterior} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.pago_mes} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.pago_acumulado} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.saldo_apropiacion} /></TableCell>
-                  <TableCell className="text-right"><CurrencyDisplay value={r.saldo_comp_pagar} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.reservas} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.cuentas_por_pagar} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>

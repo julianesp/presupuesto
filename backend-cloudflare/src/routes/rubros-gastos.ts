@@ -94,7 +94,7 @@ async function recalcularHojas(db: any, tenantId: string): Promise<void> {
       await db
         .update(rubrosGastos)
         .set({ esHoja: nuevoValor })
-        .where(eq(rubrosGastos.codigo, rubro.codigo));
+        .where(and(eq(rubrosGastos.tenantId, tenantId), eq(rubrosGastos.codigo, rubro.codigo)));
     }
   }
 }
@@ -245,7 +245,7 @@ app.post('/', clerkAuth, requireEscritura, zValidator('json', createRubroGastoSc
       await db
         .update(rubrosGastos)
         .set({ esHoja: 0 })
-        .where(eq(rubrosGastos.codigo, parentCode));
+        .where(and(eq(rubrosGastos.tenantId, tenantId), eq(rubrosGastos.codigo, parentCode)));
     }
   }
 
@@ -415,7 +415,7 @@ app.post('/sincronizar-padres', clerkAuth, requireEscritura, async (c) => {
       await db
         .update(rubrosGastos)
         .set(suma)
-        .where(eq(rubrosGastos.codigo, padre.codigo));
+        .where(and(eq(rubrosGastos.tenantId, tenantId), eq(rubrosGastos.codigo, padre.codigo)));
     }
   }
 

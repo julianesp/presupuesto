@@ -137,7 +137,7 @@ export default function ComprobanteRecaudoPage() {
         {/* Espacio para datos del pagante */}
         <div className="border-2 border-dashed border-slate-400 rounded p-3 mb-4 bg-slate-50">
           <p className="text-xs font-semibold text-slate-600 uppercase mb-2">Datos del Pagante / Deudor:</p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="border-b border-slate-400 h-7" />
               <p className="text-xs text-slate-500 mt-0.5">Nombre</p>

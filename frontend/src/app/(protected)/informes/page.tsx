@@ -63,8 +63,8 @@ const cards = [
 export default function InformesPage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-slate-900 mb-6">Informes</h1>
-      <div className="grid grid-cols-2 gap-4">
+      <h1 className="text-xl md:text-2xl font-semibold text-slate-900 mb-6">Informes</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {cards.map((c) => {
           const Icon = c.icon;
           return (

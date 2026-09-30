@@ -106,7 +106,7 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Configuración</h1>
+      <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Configuración</h1>
 
       <Card>
         <CardHeader>
@@ -114,7 +114,7 @@ export default function ConfiguracionPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Vigencia</Label>
                 <Input value={form.vigencia ?? ""} onChange={(e) => set("vigencia", e.target.value)} />
@@ -128,7 +128,7 @@ export default function ConfiguracionPage() {
               <Label>Nombre de la Institución</Label>
               <Input value={form.institucion ?? ""} onChange={(e) => set("institucion", e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Rector</Label>
                 <Input value={form.rector ?? ""} onChange={(e) => set("rector", e.target.value)} />

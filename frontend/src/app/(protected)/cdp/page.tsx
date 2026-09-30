@@ -96,7 +96,7 @@ function CdpForm({
             <Label>Valor</Label>
             <CurrencyInput value={valor} onChange={setValor} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Fuente SIFSE</Label>
               <Select value={fuenteId} onValueChange={setFuenteId}>
@@ -190,7 +190,7 @@ function EditCdpForm({
             <Label>Valor</Label>
             <CurrencyInput value={valor} onChange={setValor} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Fuente SIFSE</Label>
               <Select value={fuenteId} onValueChange={setFuenteId}>
@@ -342,7 +342,7 @@ export default function CdpPage() {
                   className={c.estado === "Anulado" ? "opacity-60" : ""}
                 >
                   <TableCell className="font-mono">{c.numero}</TableCell>
-                  <TableCell>{formatDate(c.fecha)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(c.fecha)}</TableCell>
                   <TableCell className="font-mono text-xs">{c.codigo_rubro}</TableCell>
                   <TableCell className="max-w-xs truncate text-sm">{c.objeto}</TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={c.valor} /></TableCell>

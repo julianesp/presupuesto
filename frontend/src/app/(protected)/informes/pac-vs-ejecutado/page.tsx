@@ -59,9 +59,9 @@ export default function PacVsEjecutadoPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">PAC vs Ejecutado</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">PAC vs Ejecutado</h1>
           <p className="text-sm text-slate-500 mt-1">Comparativo PAC programado vs pagos reales</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => window.print()}>

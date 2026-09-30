@@ -9,13 +9,21 @@ export interface EjecucionGastoRow {
   creditos: number;
   contracreditos: number;
   ppto_definitivo: number;
+  cdp_anterior: number;
+  cdp_mes: number;
+  cdp_acumulado: number;
   comp_anterior: number;
   comp_mes: number;
   comp_acumulado: number;
+  oblig_anterior: number;
+  oblig_mes: number;
+  oblig_acumulado: number;
   pago_anterior: number;
   pago_mes: number;
   pago_acumulado: number;
   saldo_apropiacion: number;
+  reservas: number;
+  cuentas_por_pagar: number;
   saldo_comp_pagar: number;
 }
 
@@ -35,6 +43,7 @@ export interface EjecucionIngresoRow {
   recaudo_mes: number;
   recaudo_acumulado: number;
   saldo_por_recaudar: number;
+  reconocido_por_recaudar?: number;
 }
 
 export interface TarjetaMovimiento {

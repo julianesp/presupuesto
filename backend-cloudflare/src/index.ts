@@ -22,6 +22,8 @@ import authRoutes from './routes/auth';
 import configRoutes from './routes/config';
 import cuentasBancariasRoutes from './routes/cuentas-bancarias';
 import adminRoutes from './routes/admin';
+import empresasRoutes from './routes/empresas';
+import contabilidadRoutes from './routes/contabilidad';
 import sifseRoutes from './routes/sifse';
 import dashboardRoutes from './routes/dashboard';
 import informesRoutes from './routes/informes';
@@ -72,6 +74,8 @@ app.get('/health', (c) => {
 app.route('/api/auth', authRoutes);
 app.route('/api/config', configRoutes);
 app.route('/api/admin', adminRoutes);
+app.route('/api/empresas', empresasRoutes);
+app.route('/api/contabilidad', contabilidadRoutes);
 app.route('/api/sifse', sifseRoutes);
 app.route('/api/dashboard', dashboardRoutes);
 app.route('/api/informes', informesRoutes);

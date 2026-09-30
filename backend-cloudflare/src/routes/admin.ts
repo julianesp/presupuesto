@@ -1,26 +1,18 @@
 /**
  * Admin - Endpoints
- * Administración de tenants y usuarios (solo para ADMIN)
+ * Administración de usuarios (solo para ADMIN)
  */
 
 import { Hono } from 'hono';
 import { clerkAuth, requireAdmin } from '../middleware/auth';
 import { getDb } from '../db';
-import { tenants, users } from '../db/schema';
+import { users } from '../db/schema';
 import type { Env, Variables } from '../types/bindings';
 import { eq, and } from 'drizzle-orm';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { createId } from '@paralleldrive/cuid2';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
-
-const createTenantSchema = z.object({
-  nombre: z.string().max(300),
-  nit: z.string().max(25),
-  codigoDane: z.string().max(20).optional(),
-  vigenciaActual: z.number().int().optional(),
-});
 
 const createUserSchema = z.object({
   email: z.string().email().max(200),
@@ -36,53 +28,6 @@ const updateUserSchema = z.object({
   rol: z.enum(['ADMIN', 'TESORERO', 'CONSULTA']).optional(),
   superAdmin: z.boolean().optional(),
   activo: z.boolean().optional(),
-});
-
-// ============================================================================
-// TENANTS
-// ============================================================================
-
-// GET /api/admin/tenants - Listar tenants
-app.get('/tenants', clerkAuth, requireAdmin, async (c) => {
-  const tenantId = c.get('tenantId');
-  const db = getDb(c.env);
-
-  // Por ahora solo devuelve el tenant del usuario
-  const tenant = await db.query.tenants.findFirst({
-    where: eq(tenants.id, tenantId),
-  });
-
-  return c.json(tenant ? [tenant] : []);
-});
-
-// POST /api/admin/tenants - Crear tenant
-app.post('/tenants', clerkAuth, requireAdmin, zValidator('json', createTenantSchema), async (c) => {
-  const data = c.req.valid('json');
-  const db = getDb(c.env);
-
-  // Verificar que el NIT no exista
-  const existing = await db.query.tenants.findFirst({
-    where: eq(tenants.nit, data.nit),
-  });
-
-  if (existing) {
-    return c.json({ error: `Ya existe un tenant con NIT ${data.nit}` }, 400);
-  }
-
-  const [nuevoTenant] = await db
-    .insert(tenants)
-    .values({
-      id: createId(),
-      nombre: data.nombre,
-      nit: data.nit,
-      codigoDane: data.codigoDane || null,
-      vigenciaActual: data.vigenciaActual || new Date().getFullYear(),
-      estado: 'ACTIVO',
-      fechaCreacion: new Date().toISOString(),
-    })
-    .returning();
-
-  return c.json(nuevoTenant, 201);
 });
 
 // ============================================================================

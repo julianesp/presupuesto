@@ -29,8 +29,8 @@ export default function EjecucionIngresosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Ejecución de Ingresos</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Ejecución de Ingresos</h1>
         <MesSelector value={mes} onChange={setMes} label="Todos los meses" />
       </div>
       {loading && <LoadingTable rows={8} cols={11} />}
@@ -46,7 +46,7 @@ export default function EjecucionIngresosPage() {
                   "Ppto Inicial", "Adiciones", "Reducciones", "Ppto Definitivo",
                   "Reconoc. Ant", "Reconoc. Mes", "Reconoc. Acum",
                   "Recaudo Ant", "Recaudo Mes", "Recaudo Acum",
-                  "Saldo x Recaudar",
+                  "Saldo x Recaudar", "Reconocido x Recaudar",
                 ].map((h) => (
                   <TableHead key={h} className="text-xs uppercase tracking-wide text-slate-700 text-right min-w-28 whitespace-nowrap">{h}</TableHead>
                 ))}
@@ -54,7 +54,7 @@ export default function EjecucionIngresosPage() {
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
-                <TableRow key={r.codigo} className={r.es_hoja === 0 ? "bg-slate-50 font-semibold" : ""}>
+                <TableRow key={r.codigo} className={r.es_hoja === 0 ? "bg-slate-50 font-semibold" : "bg-white"}>
                   <TableCell className="font-mono text-xs sticky left-0 bg-inherit z-10">{r.codigo}</TableCell>
                   <TableCell className={`sticky left-28 bg-inherit z-10 ${rubroIndentClass(r.codigo)}`}>{r.cuenta}</TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.ppto_inicial} /></TableCell>
@@ -68,6 +68,7 @@ export default function EjecucionIngresosPage() {
                   <TableCell className="text-right"><CurrencyDisplay value={r.recaudo_mes} /></TableCell>
                   <TableCell className="text-right font-medium"><CurrencyDisplay value={r.recaudo_acumulado} /></TableCell>
                   <TableCell className="text-right"><CurrencyDisplay value={r.saldo_por_recaudar} /></TableCell>
+                  <TableCell className="text-right"><CurrencyDisplay value={r.reconocido_por_recaudar ?? 0} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
